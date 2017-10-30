@@ -154,7 +154,7 @@ class bookkeeper():
                 `mjd_obs` as `mjd`,
                 `ra` as `raDeg`,
                 if(mjd_obs<57855.0,mag5sig-0.75,mag5sig) as `limiting_magnitude`,
-                `object` as `atlas_object_id` from atlas_metadata where %(recent)s and object like "TA%%" order by mjd_obs desc limit 100;
+                `object` as `atlas_object_id` from atlas_metadata where %(recent)s and object like "TA%%" order by mjd_obs desc;
         """ % locals()
         rows = readquery(
             log=self.log,
@@ -188,7 +188,7 @@ class bookkeeper():
                 `mjd`,
                 `ra` as `raDeg`,
                 `mag5sig` as `limiting_magnitude`,
-                `obj` as `atlas_object_id` from atlas_metadataddc where %(recent)s and obj like "TA%%" order by mjd desc limit 100;
+                `obj` as `atlas_object_id` from atlas_metadataddc where %(recent)s and obj like "TA%%" order by mjd desc;
         """ % locals()
         rows = readquery(
             log=self.log,

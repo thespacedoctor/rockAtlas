@@ -88,7 +88,7 @@ def main(arguments=None):
         bk = bookkeeper(
             log=log,
             settings=settings,
-            fullUpdate=fFlag
+            fullUpdate=fullFlag
         )
         bk.clean_all()
 
