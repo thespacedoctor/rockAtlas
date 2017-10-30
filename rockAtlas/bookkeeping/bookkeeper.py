@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 # encoding: utf-8
 """
 *Some database bookkeeping services for the ATLAS Movers database*
