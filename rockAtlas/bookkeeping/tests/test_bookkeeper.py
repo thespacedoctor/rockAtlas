@@ -80,6 +80,15 @@ class test_bookkeeper(unittest.TestCase):
         )
         bk.clean_all()
 
+    def test_bookkeeper_mysql_scripts(self):
+
+        from rockAtlas.bookkeeping import bookkeeper
+        bk = bookkeeper(
+            log=log,
+            settings=settings
+        )
+        bk._run_bookkeeping_sql_scripts()
+
     def test_bookkeeper_function_exception(self):
 
         from rockAtlas.bookkeeping import bookkeeper

@@ -17,6 +17,8 @@ from fundamentals import tools
 from fundamentals.mysql import readquery
 from fundamentals.mysql import insert_list_of_dictionaries_into_database_tables
 from HMpTy.mysql import add_htm_ids_to_mysql_database_table
+from astrocalc.times import now as mjdnow
+from fundamentals.mysql import directory_script_runner
 
 
 class bookkeeper():
@@ -33,10 +35,6 @@ class bookkeeper():
         To setup your logger, settings and database connections, please use the ``fundamentals`` package (`see tutorial here <http://fundamentals.readthedocs.io/en/latest/#tutorial>`_). 
 
         To initiate a bookkeeper object, use the following:
-
-        .. todo::
-
-            - add a tutorial about ``bookkeeper`` to documentation
 
         .. code-block:: python 
 
@@ -84,10 +82,6 @@ class bookkeeper():
 
         **Usage:**
 
-        .. todo::
-
-            - update the package tutorial if needed
-
             .. code-block:: python 
 
                 from rockAtlas.bookkeeping import bookkeeper
@@ -105,7 +99,8 @@ class bookkeeper():
         else:
             recent = True
 
-        self.import_new_atlas_pointings(self.fullUpdate)
+        self.import_new_atlas_pointings(recent)
+        self._run_bookkeeping_sql_scripts()
 
         self.log.info('completed the ``get`` method')
         return bookkeeper
@@ -117,7 +112,7 @@ class bookkeeper():
         *Import any new ATLAS pointings from the atlas3/atlas4 databases into the ``atlas_exposures`` table of the Atlas Movers database*
 
         **Key Arguments:**
-            - ``recent`` -- only sync the most recent 2 months of data (speeds things up)
+            - ``recent`` -- only sync the most recent 2 weeks of data (speeds things up)
 
         **Return:**
             - None
@@ -139,7 +134,7 @@ class bookkeeper():
             mjd = mjdnow(
                 log=self.log
             ).get_mjd()
-            recent = mjd - 62
+            recent = mjd - 14
             recent = " mjd_obs > %(recent)s " % locals()
         else:
             recent = "1=1"
@@ -166,17 +161,20 @@ class bookkeeper():
         # TIDY RESULTS BEFORE IMPORT
         entries = list(rows)
 
-        # ADD THE NEW RESULTS TO THE atlas_exposures TABLE
-        insert_list_of_dictionaries_into_database_tables(
-            dbConn=self.atlasMoversDBConn,
-            log=self.log,
-            dictList=entries,
-            dbTableName="atlas_exposures",
-            uniqueKeyList=["expname"],
-            dateModified=False,
-            batchSize=2500,
-            replace=True
-        )
+        if len(rows) > 0:
+            # ADD THE NEW RESULTS TO THE atlas_exposures TABLE
+            insert_list_of_dictionaries_into_database_tables(
+                dbConn=self.atlasMoversDBConn,
+                log=self.log,
+                dictList=entries,
+                dbTableName="atlas_exposures",
+                uniqueKeyList=["expname"],
+                dateModified=False,
+                batchSize=2500,
+                replace=True
+            )
+
+        recent = recent.replace("mjd_obs", "mjd")
 
         # SELECT ALL OF THE POINTING INFO REQUIRED FROM THE ATLAS4 DATABASE
         sqlQuery = u"""
@@ -200,17 +198,18 @@ class bookkeeper():
         # TIDY RESULTS BEFORE IMPORT
         entries = list(rows)
 
-        # ADD THE NEW RESULTS TO THE atlas_exposures TABLE
-        insert_list_of_dictionaries_into_database_tables(
-            dbConn=self.atlasMoversDBConn,
-            log=self.log,
-            dictList=entries,
-            dbTableName="atlas_exposures",
-            uniqueKeyList=["expname"],
-            dateModified=False,
-            batchSize=2500,
-            replace=True
-        )
+        if len(rows) > 0:
+            # ADD THE NEW RESULTS TO THE atlas_exposures TABLE
+            insert_list_of_dictionaries_into_database_tables(
+                dbConn=self.atlasMoversDBConn,
+                log=self.log,
+                dictList=entries,
+                dbTableName="atlas_exposures",
+                uniqueKeyList=["expname"],
+                dateModified=False,
+                batchSize=2500,
+                replace=True
+            )
 
         # APPEND HTMIDs TO THE atlas_exposures TABLE
         add_htm_ids_to_mysql_database_table(
@@ -227,4 +226,30 @@ class bookkeeper():
         self.log.info('completed the ``import_new_atlas_pointings`` method')
         return None
 
+    def _run_bookkeeping_sql_scripts(
+            self):
+        """*run bookkeeping sql scripts*
+        """
+        self.log.info('starting the ``_run_bookkeeping_sql_scripts`` method')
+
+        moduleDirectory = os.path.dirname(__file__)
+        mysqlScripts = moduleDirectory + "/mysql"
+
+        directory_script_runner(
+            log=self.log,
+            pathToScriptDirectory=mysqlScripts,
+            databaseName=self.settings[
+                "database settings"]["atlasMovers"]["db"],
+            force=True,
+            loginPath=self.settings["database settings"][
+                "atlasMovers"]["loginPath"],
+            waitForResult=True,
+            successRule=False,
+            failureRule=False
+        )
+
+        self.log.info('completed the ``_run_bookkeeping_sql_scripts`` method')
+        return None
+
+    # use the tab-trigger below for new method
     # xt-class-method

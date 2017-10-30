@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # rockAtlas documentation build configuration file, created by
-# sphinx-quickstart on Mon Oct 30 09:51:43 2017.
+# sphinx-quickstart on Mon Oct 30 12:42:39 2017.
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
@@ -31,8 +31,8 @@
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['sphinx.ext.autodoc',
-              'sphinx.ext.todo',
-              'sphinx.ext.viewcode']
+    'sphinx.ext.todo',
+    'sphinx.ext.viewcode']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -116,7 +116,7 @@ html_sidebars = {
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-html_help_basename = 'rockAtlasdoc'
+htmlhelp_basename = 'rockAtlasdoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -170,6 +170,7 @@ texinfo_documents = [
 ]
 
 
+
 # -- Options for Epub output ----------------------------------------------
 
 # Bibliographic Dublin Core info.
@@ -189,3 +190,5 @@ epub_copyright = copyright
 
 # A list of files that should not be packed into the epub file.
 epub_exclude_files = ['search.html']
+
+

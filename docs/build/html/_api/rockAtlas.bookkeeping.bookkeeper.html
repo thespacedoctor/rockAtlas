@@ -190,13 +190,14 @@
 </table>
 <dl class="class">
 <dt id="rockAtlas.bookkeeping.bookkeeper.bookkeeper">
-<em class="property">class </em><code class="descclassname">rockAtlas.bookkeeping.bookkeeper.</code><code class="descname">bookkeeper</code><span class="sig-paren">(</span><em>log</em>, <em>settings=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rockAtlas/bookkeeping/bookkeeper.html#bookkeeper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rockAtlas.bookkeeping.bookkeeper.bookkeeper" title="Permalink to this definition">  ∞</a></dt>
+<em class="property">class </em><code class="descclassname">rockAtlas.bookkeeping.bookkeeper.</code><code class="descname">bookkeeper</code><span class="sig-paren">(</span><em>log</em>, <em>settings=False</em>, <em>fullUpdate=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rockAtlas/bookkeeping/bookkeeper.html#bookkeeper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rockAtlas.bookkeeping.bookkeeper.bookkeeper" title="Permalink to this definition">  ∞</a></dt>
 <dd><p><em>The worker class for the bookkeeper module</em></p>
 <dl class="docutils">
 <dt><strong>Key Arguments:</strong></dt>
 <dd><ul class="first last simple">
 <li><code class="docutils literal"><span class="pre">log</span></code> – logger</li>
 <li><code class="docutils literal"><span class="pre">settings</span></code> – the settings dictionary</li>
+<li><code class="docutils literal"><span class="pre">fullUpdate</span></code> – a full update (not just recently changed exposures and sources)</li>
 </ul>
 </dd>
 </dl>
@@ -204,16 +205,11 @@
 <blockquote>
 <div><p>To setup your logger, settings and database connections, please use the <code class="docutils literal"><span class="pre">fundamentals</span></code> package (<a class="reference external" href="http://fundamentals.readthedocs.io/en/latest/#tutorial">see tutorial here</a>).</p>
 <p>To initiate a bookkeeper object, use the following:</p>
-<div class="admonition-todo admonition" id="index-0">
-<p class="first admonition-title">Todo</p>
-<ul class="last simple">
-<li>add a tutorial about <code class="docutils literal"><span class="pre">bookkeeper</span></code> to documentation</li>
-</ul>
-</div>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">rockAtlas.bookkeeping</span> <span class="kn">import</span> <span class="n">bookkeeper</span>
 <span class="n">bk</span> <span class="o">=</span> <span class="n">bookkeeper</span><span class="p">(</span>
     <span class="n">log</span><span class="o">=</span><span class="n">log</span><span class="p">,</span>
-    <span class="n">settings</span><span class="o">=</span><span class="n">settings</span>
+    <span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">,</span>
+    <span class="n">fullUpdate</span><span class="o">=</span><span class="bp">False</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -229,23 +225,18 @@
 </ul>
 </dd>
 </dl>
-<p><strong>Usage:</strong>
-.. todo:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">add</span> <span class="n">usage</span> <span class="n">info</span>
-<span class="o">-</span> <span class="n">create</span> <span class="n">a</span> <span class="n">sublime</span> <span class="n">snippet</span> <span class="k">for</span> <span class="n">usage</span>
-<span class="o">-</span> <span class="n">create</span> <span class="n">cl</span><span class="o">-</span><span class="n">util</span> <span class="k">for</span> <span class="n">this</span> <span class="n">method</span>
-<span class="o">-</span> <span class="n">update</span> <span class="n">the</span> <span class="n">package</span> <span class="n">tutorial</span> <span class="k">if</span> <span class="n">needed</span>
-
-<span class="o">..</span> <span class="n">code</span><span class="o">-</span><span class="n">block</span><span class="p">::</span> <span class="n">python</span> 
-
-    <span class="kn">from</span> <span class="nn">rockAtlas.bookkeeping</span> <span class="k">import</span> <span class="n">bookkeeper</span>
-    <span class="n">bk</span> <span class="o">=</span> <span class="n">bookkeeper</span><span class="p">(</span>
-        <span class="n">log</span><span class="o">=</span><span class="n">log</span><span class="p">,</span>
-        <span class="n">settings</span><span class="o">=</span><span class="n">settings</span>
-    <span class="p">)</span>
-    <span class="n">bk</span><span class="o">.</span><span class="n">clean_all</span><span class="p">()</span>
+<p><strong>Usage:</strong></p>
+<blockquote>
+<div><div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">rockAtlas.bookkeeping</span> <span class="kn">import</span> <span class="n">bookkeeper</span>
+<span class="n">bk</span> <span class="o">=</span> <span class="n">bookkeeper</span><span class="p">(</span>
+    <span class="n">log</span><span class="o">=</span><span class="n">log</span><span class="p">,</span>
+    <span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">,</span>
+    <span class="n">fullUpdate</span><span class="o">=</span><span class="bp">False</span>
+<span class="p">)</span>
+<span class="n">bk</span><span class="o">.</span><span class="n">clean_all</span><span class="p">()</span>
 </pre></div>
 </div>
+</div></blockquote>
 </dd></dl>
 
 <dl class="method">

@@ -8,7 +8,7 @@ Command-Line Usage
     
     Usage:
         rockAtlas init
-        rockAtlas bookkeeping [-s <pathToSettingsFile>]
+        rockAtlas bookkeeping [-f] [-s <pathToSettingsFile>]
     
     Commands:
         bookkeeping           update and clean database tables, perform essential bookkeeping tasks
@@ -18,4 +18,5 @@ Command-Line Usage
         -h, --help            show this help message
         -v, --version         show version
         -s, --settings        the settings file
+        -f, --full            a full update (not just recently changed exposures and sources)
     

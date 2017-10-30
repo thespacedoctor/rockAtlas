@@ -79,7 +79,6 @@ To setup the default settings file at ``~/.config/rockAtlas/rockAtlas.yaml`` run
 
 This should create and open the settings file; follow the instructions in the file to populate the missing settings values (usually given an ``XXX`` placeholder). 
 
-.. todo::
-
-    - add tutorial
+Bookkeeping
+-----------
 

@@ -14,7 +14,8 @@ install_requires = [
     'rockAtlas',
     'fundamentals',
     'hmpty',
-    'pymysql'
+    'pymysql',
+    'astrocalc'
 ]
 
 # READ THE DOCS SERVERS

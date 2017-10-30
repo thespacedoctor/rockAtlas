@@ -113,7 +113,10 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="#command-line-usage">Command-Line Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#documentation">Documentation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#command-line-tutorial">Command-Line Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#command-line-tutorial">Command-Line Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#bookkeeping">Bookkeeping</a></li>
+</ul>
+</li>
 </ul>
 <p class="caption"><span class="caption-text">Python Package Documentation</span></p>
 <ul>
@@ -228,7 +231,7 @@ are welcomed!</p>
 
 Usage:
     rockAtlas init
-    rockAtlas bookkeeping <span class="o">[</span>-s &lt;pathToSettingsFile&gt;<span class="o">]</span>
+    rockAtlas bookkeeping <span class="o">[</span>-f<span class="o">]</span> <span class="o">[</span>-s &lt;pathToSettingsFile&gt;<span class="o">]</span>
 
 Commands:
     bookkeeping           update and clean database tables, perform essential bookkeeping tasks
@@ -238,6 +241,7 @@ Options:
     -h, --help            show this <span class="nb">help</span> message
     -v, --version         show version
     -s, --settings        the settings file
+    -f, --full            a full update <span class="o">(</span>not just recently changed exposures and sources<span class="o">)</span>
 </pre></div>
 </div>
 </div>
@@ -253,11 +257,8 @@ Options:
 </pre></div>
 </div>
 <p>This should create and open the settings file; follow the instructions in the file to populate the missing settings values (usually given an <code class="docutils literal"><span class="pre">XXX</span></code> placeholder).</p>
-<div class="admonition-todo admonition" id="index-0">
-<p class="first admonition-title">Todo</p>
-<ul class="last simple">
-<li>add tutorial</li>
-</ul>
+<div class="section" id="bookkeeping">
+<h2>Bookkeeping<a class="headerlink" href="#bookkeeping" title="Permalink to this headline">  ∞</a></h2>
 </div>
 </div>
 

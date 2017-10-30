@@ -219,7 +219,10 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="_includes/index.html#command-line-usage">Command-Line Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="_includes/index.html#documentation">Documentation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="_includes/index.html#command-line-tutorial">Command-Line Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_includes/index.html#command-line-tutorial">Command-Line Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="_includes/index.html#bookkeeping">Bookkeeping</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -267,7 +270,7 @@ are welcomed!</p>
 
 Usage:
     rockAtlas init
-    rockAtlas bookkeeping <span class="o">[</span>-s &lt;pathToSettingsFile&gt;<span class="o">]</span>
+    rockAtlas bookkeeping <span class="o">[</span>-f<span class="o">]</span> <span class="o">[</span>-s &lt;pathToSettingsFile&gt;<span class="o">]</span>
 
 Commands:
     bookkeeping           update and clean database tables, perform essential bookkeeping tasks
@@ -277,6 +280,7 @@ Options:
     -h, --help            show this <span class="nb">help</span> message
     -v, --version         show version
     -s, --settings        the settings file
+    -f, --full            a full update <span class="o">(</span>not just recently changed exposures and sources<span class="o">)</span>
 </pre></div>
 </div>
 </div>
@@ -292,12 +296,8 @@ Options:
 </pre></div>
 </div>
 <p>This should create and open the settings file; follow the instructions in the file to populate the missing settings values (usually given an <code class="docutils literal"><span class="pre">XXX</span></code> placeholder).</p>
-<div class="admonition-todo admonition" id="index-0">
-<p class="first admonition-title">Todo</p>
-<ul class="last simple">
-<li>add tutorial</li>
-</ul>
-</div>
+<div class="section" id="bookkeeping">
+<h2>Bookkeeping<a class="headerlink" href="#bookkeeping" title="Permalink to this headline">  ∞</a></h2>
 <div class="toctree-wrapper compound">
 <p class="caption"><span class="caption-text">Python Package Documentation</span></p>
 <ul>
@@ -322,6 +322,7 @@ Options:
 </ul>
 </li>
 </ul>
+</div>
 </div>
 <div class="section" id="indexes">
 <span id="id1"></span><h2>Indexes<a class="headerlink" href="#indexes" title="Permalink to this headline">  ∞</a></h2>

@@ -177,7 +177,7 @@
            <div itemprop="articleBody">
             
   <h1>Source code for rockAtlas.bookkeeping.bookkeeper</h1><div class="highlight"><pre>
-<span></span><span class="ch">#!/usr/local/bin/python</span>
+<span></span><span class="ch">#!/usr/bin/env python</span>
 <span class="c1"># encoding: utf-8</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">*Some database bookkeeping services for the ATLAS Movers database*</span>
@@ -205,6 +205,7 @@
 <span class="sd">    **Key Arguments:**</span>
 <span class="sd">        - ``log`` -- logger</span>
 <span class="sd">        - ``settings`` -- the settings dictionary</span>
+<span class="sd">        - ``fullUpdate`` -- a full update (not just recently changed exposures and sources)</span>
 
 <span class="sd">    **Usage:**</span>
 
@@ -212,16 +213,13 @@
 
 <span class="sd">        To initiate a bookkeeper object, use the following:</span>
 
-<span class="sd">        .. todo::</span>
-
-<span class="sd">            - add a tutorial about ``bookkeeper`` to documentation</span>
-
 <span class="sd">        .. code-block:: python </span>
 
 <span class="sd">            from rockAtlas.bookkeeping import bookkeeper</span>
 <span class="sd">            bk = bookkeeper(</span>
 <span class="sd">                log=log,</span>
-<span class="sd">                settings=settings</span>
+<span class="sd">                settings=settings,</span>
+<span class="sd">                fullUpdate=False</span>
 <span class="sd">            )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Initialisation</span>
@@ -230,18 +228,12 @@
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">log</span><span class="p">,</span>
             <span class="n">settings</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-
+            <span class="n">fullUpdate</span><span class="o">=</span><span class="kc">False</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="n">log</span>
         <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;instansiating a new &#39;bookkeeper&#39; object&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">settings</span> <span class="o">=</span> <span class="n">settings</span>
         <span class="c1"># xt-self-arg-tmpx</span>
-
-        <span class="c1"># 2. @flagged: what are the default attrributes each object could have? Add them to variable attribute set here</span>
-        <span class="c1"># Variable Data Atrributes</span>
-
-        <span class="c1"># 3. @flagged: what variable attrributes need overriden in any baseclass(es) used</span>
-        <span class="c1"># Override Variable Data Atrributes</span>
 
         <span class="c1"># Initial Actions</span>
         <span class="c1"># SETUP ALL DATABASE CONNECTIONS</span>
@@ -254,11 +246,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">atlas3DbConn</span> <span class="o">=</span> <span class="n">dbConns</span><span class="p">[</span><span class="s2">&quot;atlas3&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">atlas4DbConn</span> <span class="o">=</span> <span class="n">dbConns</span><span class="p">[</span><span class="s2">&quot;atlas4&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">atlasMoversDBConn</span> <span class="o">=</span> <span class="n">dbConns</span><span class="p">[</span><span class="s2">&quot;atlasMovers&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fullUpdate</span> <span class="o">=</span> <span class="n">fullUpdate</span>
 
         <span class="k">return</span> <span class="kc">None</span></div>
 
-    <span class="c1"># 4. @flagged: what actions does each object have to be able to perform? Add them here</span>
-    <span class="c1"># Method Attributes</span>
 <div class="viewcode-block" id="bookkeeper.clean_all"><a class="viewcode-back" href="../../../_api/rockAtlas.bookkeeping.bookkeeper.html#rockAtlas.bookkeeping.bookkeeper.bookkeeper.clean_all">[docs]</a>    <span class="k">def</span> <span class="nf">clean_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        *clean and sync all the bookkeeping tables*</span>
@@ -267,25 +258,25 @@
 <span class="sd">            - ``bookkeeper``</span>
 
 <span class="sd">        **Usage:**</span>
-<span class="sd">        .. todo::</span>
-
-<span class="sd">            - add usage info</span>
-<span class="sd">            - create a sublime snippet for usage</span>
-<span class="sd">            - create cl-util for this method</span>
-<span class="sd">            - update the package tutorial if needed</span>
 
 <span class="sd">            .. code-block:: python </span>
 
 <span class="sd">                from rockAtlas.bookkeeping import bookkeeper</span>
 <span class="sd">                bk = bookkeeper(</span>
 <span class="sd">                    log=log,</span>
-<span class="sd">                    settings=settings</span>
+<span class="sd">                    settings=settings,</span>
+<span class="sd">                    fullUpdate=False</span>
 <span class="sd">                )</span>
 <span class="sd">                bk.clean_all()</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;starting the ``get`` method&#39;</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">import_new_atlas_pointings</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fullUpdate</span><span class="p">:</span>
+            <span class="n">recent</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">recent</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">import_new_atlas_pointings</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fullUpdate</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;completed the ``get`` method&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">bookkeeper</span></div>
@@ -334,7 +325,7 @@
 <span class="s2">                `mjd_obs` as `mjd`,</span>
 <span class="s2">                `ra` as `raDeg`,</span>
 <span class="s2">                if(mjd_obs&lt;57855.0,mag5sig-0.75,mag5sig) as `limiting_magnitude`,</span>
-<span class="s2">                `object` as `atlas_object_id` from atlas_metadata where </span><span class="si">%(recent)s</span><span class="s2"> and object like &quot;TA</span><span class="si">%%</span><span class="s2">&quot; order by mjd_obs desc limit 100;</span>
+<span class="s2">                `object` as `atlas_object_id` from atlas_metadata where </span><span class="si">%(recent)s</span><span class="s2"> and object like &quot;TA</span><span class="si">%%</span><span class="s2">&quot; order by mjd_obs desc;</span>
 <span class="s2">        &quot;&quot;&quot;</span> <span class="o">%</span> <span class="nb">locals</span><span class="p">()</span>
         <span class="n">rows</span> <span class="o">=</span> <span class="n">readquery</span><span class="p">(</span>
             <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span>
@@ -368,7 +359,7 @@
 <span class="s2">                `mjd`,</span>
 <span class="s2">                `ra` as `raDeg`,</span>
 <span class="s2">                `mag5sig` as `limiting_magnitude`,</span>
-<span class="s2">                `obj` as `atlas_object_id` from atlas_metadataddc where </span><span class="si">%(recent)s</span><span class="s2"> and obj like &quot;TA</span><span class="si">%%</span><span class="s2">&quot; order by mjd desc limit 100;</span>
+<span class="s2">                `obj` as `atlas_object_id` from atlas_metadataddc where </span><span class="si">%(recent)s</span><span class="s2"> and obj like &quot;TA</span><span class="si">%%</span><span class="s2">&quot; order by mjd desc;</span>
 <span class="s2">        &quot;&quot;&quot;</span> <span class="o">%</span> <span class="nb">locals</span><span class="p">()</span>
         <span class="n">rows</span> <span class="o">=</span> <span class="n">readquery</span><span class="p">(</span>
             <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span>
