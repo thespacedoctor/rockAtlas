@@ -37,6 +37,7 @@ setup(name="rockAtlas",
           'Programming Language :: Python :: 2.7',
           'Topic :: Utilities',
       ],
+
       keywords=['atlas, asteroid, astronomy'],
       url='https://github.com/thespacedoctor/rockAtlas',
       download_url='https://github.com/thespacedoctor/rockAtlas/archive/v%(__version__)s.zip' % locals(

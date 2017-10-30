@@ -3,7 +3,6 @@ include README.rst
 include *.yaml
 include *.txt
 include *.md
-include setup.py
 include *.rst
 recursive-include rockAtlas *
 global-exclude *.pyo
