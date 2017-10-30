@@ -26,6 +26,18 @@ database settings:
             port: 9004
         loginPath: atlas4
 
+    atlasMovers:
+        db: atlas_moving_objects
+        host: 127.0.0.1
+        user: dryx
+        password: dryxPass
+        tunnel:
+            remote user: dry
+            remote ip: psweb.mp.qub.ac.uk
+            remote datbase host: dormammu
+            port: 9006
+        loginPath: atlasMovers
+
 
 
 logging settings:

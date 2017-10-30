@@ -54,6 +54,7 @@ class database():
             dbConns, dbVersions = db.connect()
             atlas3DbConn = dbConns["atlas3"]
             atlas4DbConn = dbConns["atlas4"]
+            atlasMovers = dbConns["atlasMovers"]
     """
     # INITIALISATION
 
@@ -83,9 +84,11 @@ class database():
             "database settings"]["atlas3"]
         atlas4Settings = self.settings[
             "database settings"]["atlas4"]
+        atlasMovers = self.settings[
+            "database settings"]["atlasMovers"]
 
         dbConns = []
-        for dbSettings in [atlas3Settings, atlas4Settings]:
+        for dbSettings in [atlas3Settings, atlas4Settings, atlasMovers]:
             port = False
             if dbSettings["tunnel"]:
                 port = self._setup_tunnel(
@@ -112,7 +115,8 @@ class database():
         # CREATE A DICTIONARY OF DATABASES
         dbConns = {
             "atlas3": dbConns[0],
-            "atlas4": dbConns[1]
+            "atlas4": dbConns[1],
+            "atlasMovers":  dbConns[2],
         }
 
         dbVersions = {}

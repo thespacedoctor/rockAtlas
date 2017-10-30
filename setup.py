@@ -13,7 +13,8 @@ install_requires = [
     'pyyaml',
     'rockAtlas',
     'fundamentals',
-    'hmpty'
+    'hmpty',
+    'pymysql'
 ]
 
 # READ THE DOCS SERVERS
