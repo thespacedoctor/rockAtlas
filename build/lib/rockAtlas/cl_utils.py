@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 # encoding: utf-8
 """
 Documentation for rockAtlas can be found here: http://rockAtlas.readthedocs.org/en/stable
