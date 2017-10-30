@@ -5,13 +5,17 @@ Documentation for rockAtlas can be found here: http://rockAtlas.readthedocs.org/
 
 Usage:
     rockAtlas init
-    rockAtlas [-s <pathToSettingsFile>]
+    rockAtlas bookkeeping [-f] [-s <pathToSettingsFile>]
+
+Commands:
+    bookkeeping           update and clean database tables, perform essential bookkeeping tasks
 
 Options:
     init                  setup the rockAtlas settings file for the first time
     -h, --help            show this help message
     -v, --version         show version
     -s, --settings        the settings file
+    -f, --full            a full update (not just recently changed exposures and sources)
 """
 ################# GLOBAL IMPORTS ####################
 import sys
@@ -79,6 +83,14 @@ def main(arguments=None):
             pass
 
     # CALL FUNCTIONS/OBJECTS
+    if bookkeeping:
+        from rockAtlas.bookkeeping import bookkeeper
+        bk = bookkeeper(
+            log=log,
+            settings=settings,
+            fullUpdate=fFlag
+        )
+        bk.clean_all()
 
     if "dbConn" in locals() and dbConn:
         dbConn.commit()

@@ -12,7 +12,8 @@ def readme():
 install_requires = [
     'pyyaml',
     'rockAtlas',
-    'fundamentals'
+    'fundamentals',
+    'hmpty'
 ]
 
 # READ THE DOCS SERVERS

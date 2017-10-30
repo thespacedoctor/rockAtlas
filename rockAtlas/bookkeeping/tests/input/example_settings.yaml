@@ -1,44 +1,20 @@
 version: 1
-
 database settings:
+    db: dryx_unit_testing
+    host: localhost
+    user: unittesting
+    password: utpass
+    loginPath: unittesting
+    tunnel: False
 
-    atlas3:
-        db: atlas3
-        host: 127.0.0.1
-        user: atlas3user
-        password: atlas3pass
-        tunnel:
-            remote user: dry
-            remote ip: psweb.mp.qub.ac.uk
-            remote datbase host: psdb3
-            port: 9004
-        loginPath: atlas3
-
-    atlas4:
-        db: atlas4
-        host: 127.0.0.1
-        user: atlas4user
-        password: atlas4pass
-        tunnel:
-            remote user: dry
-            remote ip: psweb.mp.qub.ac.uk
-            remote datbase host: psdb3
-            port: 9004
-        loginPath: atlas4
-
-    atlasMovers:
-        db: atlas_moving_objects
-        host: 127.0.0.1
-        user: dryx
-        password: dryxPass
-        tunnel:
-            remote user: dry
-            remote ip: psweb.mp.qub.ac.uk
-            remote datbase host: dormammu
-            port: 9006
-        loginPath: atlasMovers
-
-
+# SSH TUNNEL - if a tunnel is required to connect to the database(s) then add setup here
+# Note only one tunnel is setup - may need to change this to 2 tunnels in the future if 
+# code, static catalogue database and transient database are all on seperate machines.
+ssh tunnel:
+    remote user: username
+    remote ip: mydomain.co.uk
+    remote datbase host: mydatabaseName
+    port: 9002
 
 logging settings:
     formatters:

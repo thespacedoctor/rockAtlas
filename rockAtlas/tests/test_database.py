@@ -77,6 +77,7 @@ class test_database(unittest.TestCase):
         dbConns, dbVersions = db.connect()
         self.atlas3DbConn = dbConns["atlas3"]
         self.atlas4DbConn = dbConns["atlas4"]
+        self.atlasMoversDbConn = dbConns["atlasMovers"]
 
         from fundamentals.mysql import readquery
         sqlQuery = u"""
@@ -93,6 +94,13 @@ class test_database(unittest.TestCase):
             log=log,
             sqlQuery=sqlQuery,
             dbConn=self.atlas4DbConn,
+            quiet=False
+        )
+        print rows
+        rows = readquery(
+            log=log,
+            sqlQuery=sqlQuery,
+            dbConn=self.atlasMoversDbConn,
             quiet=False
         )
         print rows
