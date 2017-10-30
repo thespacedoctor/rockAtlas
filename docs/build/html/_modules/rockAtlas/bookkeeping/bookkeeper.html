@@ -1,0 +1,476 @@
+
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>rockAtlas.bookkeeping.bookkeeper &mdash; rockAtlas v0.1 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  
+    <link rel="stylesheet" href="../../../_static/dryx.css" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="rockAtlas v0.1 documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> rockAtlas
+          
+
+          
+            
+            <img src="../../../_static/thespacedoctor_icon_white_circle.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../_includes/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../_includes/index.html#command-line-usage">Command-Line Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../_includes/index.html#documentation">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../_includes/index.html#command-line-tutorial">Command-Line Tutorial</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Python Package Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autosummary.html">Subpackages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../autosummary.html#modules">Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../autosummary.html#classes">Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../autosummary.html#functions">Functions</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">rockAtlas</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>rockAtlas.bookkeeping.bookkeeper</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for rockAtlas.bookkeeping.bookkeeper</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/local/bin/python</span>
+<span class="c1"># encoding: utf-8</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">*Some database bookkeeping services for the ATLAS Movers database*</span>
+
+<span class="sd">:Author:</span>
+<span class="sd">    David Young</span>
+
+<span class="sd">:Date Created:</span>
+<span class="sd">    October 27, 2017</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1">################# GLOBAL IMPORTS ####################</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;TERM&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;vt100&#39;</span>
+<span class="kn">from</span> <span class="nn">fundamentals</span> <span class="k">import</span> <span class="n">tools</span>
+<span class="kn">from</span> <span class="nn">fundamentals.mysql</span> <span class="k">import</span> <span class="n">readquery</span>
+<span class="kn">from</span> <span class="nn">fundamentals.mysql</span> <span class="k">import</span> <span class="n">insert_list_of_dictionaries_into_database_tables</span>
+<span class="kn">from</span> <span class="nn">HMpTy.mysql</span> <span class="k">import</span> <span class="n">add_htm_ids_to_mysql_database_table</span>
+
+
+<div class="viewcode-block" id="bookkeeper"><a class="viewcode-back" href="../../../_autosummary/rockAtlas.bookkeeping.bookkeeper.html#rockAtlas.bookkeeping.bookkeeper.bookkeeper">[docs]</a><span class="k">class</span> <span class="nc">bookkeeper</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    *The worker class for the bookkeeper module*</span>
+
+<span class="sd">    **Key Arguments:**</span>
+<span class="sd">        - ``log`` -- logger</span>
+<span class="sd">        - ``settings`` -- the settings dictionary</span>
+
+<span class="sd">    **Usage:**</span>
+
+<span class="sd">        To setup your logger, settings and database connections, please use the ``fundamentals`` package (`see tutorial here &lt;http://fundamentals.readthedocs.io/en/latest/#tutorial&gt;`_). </span>
+
+<span class="sd">        To initiate a bookkeeper object, use the following:</span>
+
+<span class="sd">        .. todo::</span>
+
+<span class="sd">            - add a tutorial about ``bookkeeper`` to documentation</span>
+
+<span class="sd">        .. code-block:: python </span>
+
+<span class="sd">            from rockAtlas.bookkeeping import bookkeeper</span>
+<span class="sd">            bk = bookkeeper(</span>
+<span class="sd">                log=log,</span>
+<span class="sd">                settings=settings</span>
+<span class="sd">            )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Initialisation</span>
+
+<div class="viewcode-block" id="bookkeeper.__init__"><a class="viewcode-back" href="../../../_autosummary/rockAtlas.bookkeeping.bookkeeper.html#rockAtlas.bookkeeping.bookkeeper.bookkeeper.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">log</span><span class="p">,</span>
+            <span class="n">settings</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="n">log</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;instansiating a new &#39;bookkeeper&#39; object&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span> <span class="o">=</span> <span class="n">settings</span>
+        <span class="c1"># xt-self-arg-tmpx</span>
+
+        <span class="c1"># 2. @flagged: what are the default attrributes each object could have? Add them to variable attribute set here</span>
+        <span class="c1"># Variable Data Atrributes</span>
+
+        <span class="c1"># 3. @flagged: what variable attrributes need overriden in any baseclass(es) used</span>
+        <span class="c1"># Override Variable Data Atrributes</span>
+
+        <span class="c1"># Initial Actions</span>
+        <span class="c1"># SETUP ALL DATABASE CONNECTIONS</span>
+        <span class="kn">from</span> <span class="nn">rockAtlas</span> <span class="k">import</span> <span class="n">database</span>
+        <span class="n">db</span> <span class="o">=</span> <span class="n">database</span><span class="p">(</span>
+            <span class="n">log</span><span class="o">=</span><span class="n">log</span><span class="p">,</span>
+            <span class="n">settings</span><span class="o">=</span><span class="n">settings</span>
+        <span class="p">)</span>
+        <span class="n">dbConns</span><span class="p">,</span> <span class="n">dbVersions</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atlas3DbConn</span> <span class="o">=</span> <span class="n">dbConns</span><span class="p">[</span><span class="s2">&quot;atlas3&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atlas4DbConn</span> <span class="o">=</span> <span class="n">dbConns</span><span class="p">[</span><span class="s2">&quot;atlas4&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atlasMoversDBConn</span> <span class="o">=</span> <span class="n">dbConns</span><span class="p">[</span><span class="s2">&quot;atlasMovers&quot;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+    <span class="c1"># 4. @flagged: what actions does each object have to be able to perform? Add them here</span>
+    <span class="c1"># Method Attributes</span>
+<div class="viewcode-block" id="bookkeeper.clean_all"><a class="viewcode-back" href="../../../_api/rockAtlas.bookkeeping.bookkeeper.html#rockAtlas.bookkeeping.bookkeeper.bookkeeper.clean_all">[docs]</a>    <span class="k">def</span> <span class="nf">clean_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        *clean and sync all the bookkeeping tables*</span>
+
+<span class="sd">        **Return:**</span>
+<span class="sd">            - ``bookkeeper``</span>
+
+<span class="sd">        **Usage:**</span>
+<span class="sd">        .. todo::</span>
+
+<span class="sd">            - add usage info</span>
+<span class="sd">            - create a sublime snippet for usage</span>
+<span class="sd">            - create cl-util for this method</span>
+<span class="sd">            - update the package tutorial if needed</span>
+
+<span class="sd">            .. code-block:: python </span>
+
+<span class="sd">                from rockAtlas.bookkeeping import bookkeeper</span>
+<span class="sd">                bk = bookkeeper(</span>
+<span class="sd">                    log=log,</span>
+<span class="sd">                    settings=settings</span>
+<span class="sd">                )</span>
+<span class="sd">                bk.clean_all()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;starting the ``get`` method&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">import_new_atlas_pointings</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;completed the ``get`` method&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">bookkeeper</span></div>
+
+<div class="viewcode-block" id="bookkeeper.import_new_atlas_pointings"><a class="viewcode-back" href="../../../_api/rockAtlas.bookkeeping.bookkeeper.html#rockAtlas.bookkeeping.bookkeeper.bookkeeper.import_new_atlas_pointings">[docs]</a>    <span class="k">def</span> <span class="nf">import_new_atlas_pointings</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">recent</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        *Import any new ATLAS pointings from the atlas3/atlas4 databases into the ``atlas_exposures`` table of the Atlas Movers database*</span>
+
+<span class="sd">        **Key Arguments:**</span>
+<span class="sd">            - ``recent`` -- only sync the most recent 2 months of data (speeds things up)</span>
+
+<span class="sd">        **Return:**</span>
+<span class="sd">            - None</span>
+
+<span class="sd">         **Usage:**</span>
+
+<span class="sd">            .. code-block:: python</span>
+
+<span class="sd">                from rockAtlas.bookkeeping import bookkeeper</span>
+<span class="sd">                bk = bookkeeper(</span>
+<span class="sd">                    log=log,</span>
+<span class="sd">                    settings=settings</span>
+<span class="sd">                )</span>
+<span class="sd">                bk.import_new_atlas_pointings()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;starting the ``import_new_atlas_pointings`` method&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">recent</span><span class="p">:</span>
+            <span class="n">mjd</span> <span class="o">=</span> <span class="n">mjdnow</span><span class="p">(</span>
+                <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">get_mjd</span><span class="p">()</span>
+            <span class="n">recent</span> <span class="o">=</span> <span class="n">mjd</span> <span class="o">-</span> <span class="mi">62</span>
+            <span class="n">recent</span> <span class="o">=</span> <span class="s2">&quot; mjd_obs &gt; </span><span class="si">%(recent)s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="nb">locals</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">recent</span> <span class="o">=</span> <span class="s2">&quot;1=1&quot;</span>
+
+        <span class="c1"># SELECT ALL OF THE POINTING INFO REQUIRED FROM THE ATLAS3 DATABASE</span>
+        <span class="n">sqlQuery</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            SELECT</span>
+<span class="s2">                `expname`,</span>
+<span class="s2">                `dec` as `decDeg`,</span>
+<span class="s2">                `exptime` as `exp_time`,</span>
+<span class="s2">                `filter`,</span>
+<span class="s2">                `mjd_obs` as `mjd`,</span>
+<span class="s2">                `ra` as `raDeg`,</span>
+<span class="s2">                if(mjd_obs&lt;57855.0,mag5sig-0.75,mag5sig) as `limiting_magnitude`,</span>
+<span class="s2">                `object` as `atlas_object_id` from atlas_metadata where </span><span class="si">%(recent)s</span><span class="s2"> and object like &quot;TA</span><span class="si">%%</span><span class="s2">&quot; order by mjd_obs desc limit 100;</span>
+<span class="s2">        &quot;&quot;&quot;</span> <span class="o">%</span> <span class="nb">locals</span><span class="p">()</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="n">readquery</span><span class="p">(</span>
+            <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span>
+            <span class="n">sqlQuery</span><span class="o">=</span><span class="n">sqlQuery</span><span class="p">,</span>
+            <span class="n">dbConn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">atlas3DbConn</span><span class="p">,</span>
+            <span class="n">quiet</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+
+        <span class="c1"># TIDY RESULTS BEFORE IMPORT</span>
+        <span class="n">entries</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span>
+
+        <span class="c1"># ADD THE NEW RESULTS TO THE atlas_exposures TABLE</span>
+        <span class="n">insert_list_of_dictionaries_into_database_tables</span><span class="p">(</span>
+            <span class="n">dbConn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">atlasMoversDBConn</span><span class="p">,</span>
+            <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span>
+            <span class="n">dictList</span><span class="o">=</span><span class="n">entries</span><span class="p">,</span>
+            <span class="n">dbTableName</span><span class="o">=</span><span class="s2">&quot;atlas_exposures&quot;</span><span class="p">,</span>
+            <span class="n">uniqueKeyList</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;expname&quot;</span><span class="p">],</span>
+            <span class="n">dateModified</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">batchSize</span><span class="o">=</span><span class="mi">2500</span><span class="p">,</span>
+            <span class="n">replace</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+
+        <span class="c1"># SELECT ALL OF THE POINTING INFO REQUIRED FROM THE ATLAS4 DATABASE</span>
+        <span class="n">sqlQuery</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            SELECT</span>
+<span class="s2">                `obs` as `expname`,</span>
+<span class="s2">                `dec` as `decDeg`,</span>
+<span class="s2">                `texp` as `exp_time`,</span>
+<span class="s2">                `filt` as `filter`,</span>
+<span class="s2">                `mjd`,</span>
+<span class="s2">                `ra` as `raDeg`,</span>
+<span class="s2">                `mag5sig` as `limiting_magnitude`,</span>
+<span class="s2">                `obj` as `atlas_object_id` from atlas_metadataddc where </span><span class="si">%(recent)s</span><span class="s2"> and obj like &quot;TA</span><span class="si">%%</span><span class="s2">&quot; order by mjd desc limit 100;</span>
+<span class="s2">        &quot;&quot;&quot;</span> <span class="o">%</span> <span class="nb">locals</span><span class="p">()</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="n">readquery</span><span class="p">(</span>
+            <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span>
+            <span class="n">sqlQuery</span><span class="o">=</span><span class="n">sqlQuery</span><span class="p">,</span>
+            <span class="n">dbConn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">atlas4DbConn</span><span class="p">,</span>
+            <span class="n">quiet</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+
+        <span class="c1"># TIDY RESULTS BEFORE IMPORT</span>
+        <span class="n">entries</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span>
+
+        <span class="c1"># ADD THE NEW RESULTS TO THE atlas_exposures TABLE</span>
+        <span class="n">insert_list_of_dictionaries_into_database_tables</span><span class="p">(</span>
+            <span class="n">dbConn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">atlasMoversDBConn</span><span class="p">,</span>
+            <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span>
+            <span class="n">dictList</span><span class="o">=</span><span class="n">entries</span><span class="p">,</span>
+            <span class="n">dbTableName</span><span class="o">=</span><span class="s2">&quot;atlas_exposures&quot;</span><span class="p">,</span>
+            <span class="n">uniqueKeyList</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;expname&quot;</span><span class="p">],</span>
+            <span class="n">dateModified</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">batchSize</span><span class="o">=</span><span class="mi">2500</span><span class="p">,</span>
+            <span class="n">replace</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+
+        <span class="c1"># APPEND HTMIDs TO THE atlas_exposures TABLE</span>
+        <span class="n">add_htm_ids_to_mysql_database_table</span><span class="p">(</span>
+            <span class="n">raColName</span><span class="o">=</span><span class="s2">&quot;raDeg&quot;</span><span class="p">,</span>
+            <span class="n">declColName</span><span class="o">=</span><span class="s2">&quot;decDeg&quot;</span><span class="p">,</span>
+            <span class="n">tableName</span><span class="o">=</span><span class="s2">&quot;atlas_exposures&quot;</span><span class="p">,</span>
+            <span class="n">dbConn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">atlasMoversDBConn</span><span class="p">,</span>
+            <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span>
+            <span class="n">primaryIdColumnName</span><span class="o">=</span><span class="s2">&quot;primaryId&quot;</span>
+        <span class="p">)</span>
+
+        <span class="nb">print</span> <span class="s2">&quot;ATLAS pointings synced between ATLAS3/ATLAS4 databases and the ATLAS Movers `atlas_exposures` database table&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;completed the ``import_new_atlas_pointings`` method&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div></div>
+
+    <span class="c1"># xt-class-method</span>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Dave Young.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'v0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

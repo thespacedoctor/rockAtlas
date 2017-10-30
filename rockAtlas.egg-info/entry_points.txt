@@ -1,0 +1,3 @@
+[console_scripts]
+rockAtlas = rockAtlas.cl_utils:main
+
