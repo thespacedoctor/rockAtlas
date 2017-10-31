@@ -37,5 +37,24 @@ rockAtlas caches the orbital elements from `astorb.dat <ftp://ftp.lowell.edu/pub
 
 This downloads a fresh copy of astorb.dat, parses it and refreshes the cache in the ``orbital_elements`` table.
 
+PyEphem Positions
+-----------------
+
+To generate the PyEphem positions for moving objects in the neighbourhoods of the ATLAS exposures run the command:
+
+.. code-block:: bash 
+    
+    rockAtlas pyephem
+
+Depending on the backlog of ATLAS exposures this may take minutes .. or days! The running log printed to stdout should give you an idea of how long it will take to generate the positions for all new exposures.
+
+To only generate positions for a single pyephem snapshot (few 10s of exposures) run the command with the `--one` flag:
+
+.. code-block:: bash 
+    
+    rockAtlas pyephem --one
+
+
+
 
     

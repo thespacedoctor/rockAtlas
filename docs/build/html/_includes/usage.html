@@ -10,7 +10,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Command-Line Usage &mdash; rockAtlas v0.1 documentation</title>
+  <title>Command-Line Usage &mdash; rockAtlas v0.2.0 documentation</title>
   
 
   
@@ -43,7 +43,7 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="rockAtlas v0.1 documentation" href="../index.html"/> 
+    <link rel="top" title="rockAtlas v0.2.0 documentation" href="../index.html"/> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -75,7 +75,7 @@
             
             
               <div class="version">
-                v0.1
+                v0.2.0
               </div>
             
           
@@ -183,10 +183,12 @@ Usage:
     rockAtlas init
     rockAtlas bookkeeping <span class="o">[</span>-f<span class="o">]</span> <span class="o">[</span>-s &lt;pathToSettingsFile&gt;<span class="o">]</span>
     rockAtlas astorb
+    rockAtlas pyephem <span class="o">[</span>-o<span class="o">]</span>
 
 Commands:
     bookkeeping           update and clean database tables, perform essential bookkeeping tasks
     astorb                download astorb.dat orbital elements file and update the orbital elements database table
+    pyephem               generate the pyephem positions overlapping the ATLAS exposures in the moving objects database
 
 Options:
     init                  setup the rockAtlas settings file <span class="k">for</span> the first <span class="nb">time</span>
@@ -194,6 +196,7 @@ Options:
     -v, --version         show version
     -s, --settings        the settings file
     -f, --full            a full update <span class="o">(</span>not just recently changed exposures and sources<span class="o">)</span>
+    -o, --one             only generate positions <span class="k">for</span> a single pyephem snapshot <span class="o">(</span>few 10s of exposures - useful <span class="k">for</span> testing<span class="o">)</span>
 </pre></div>
 </div>
 </div>
@@ -233,7 +236,7 @@ Options:
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'v0.1',
+            VERSION:'v0.2.0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

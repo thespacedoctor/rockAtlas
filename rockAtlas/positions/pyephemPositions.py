@@ -28,7 +28,7 @@ from fundamentals.mysql import writequery
 
 class pyephemPositions():
     """
-    *The worker class for the pyephemPositions module*
+    *Estimate the positions of moving objects in the neighbourhood of the ATLAS exposures using pyephemPositions and add results to the database*
 
     **Key Arguments:**
         - ``log`` -- logger
@@ -41,21 +41,16 @@ class pyephemPositions():
 
         To initiate a pyephemPositions object, use the following:
 
-        .. todo::
-
-            - add usage info
-            - create a sublime snippet for usage
-            - create cl-util for this class
-            - add a tutorial about ``pyephemPositions`` to documentation
-            - create a blog post about what ``pyephemPositions`` does
-
         .. code-block:: python 
 
-            usage code   
+            from rockAtlas.positions import pyephemPositions
+            pyeph = pyephemPositions(
+                log=log,
+                settings=settings
+            )
+            pyeph.get()
     """
     # Initialisation
-    # 1. @flagged: what are the unique attrributes for each object? Add them
-    # to __init__
 
     def __init__(
             self,
@@ -67,16 +62,9 @@ class pyephemPositions():
         log.debug("instansiating a new 'pyephemPositions' object")
         self.settings = settings
         self.dev_flag = dev_flag
-
         # xt-self-arg-tmpx
 
-        # 2. @flagged: what are the default attrributes each object could have? Add them to variable attribute set here
-        # Variable Data Atrributes
-
-        # 3. @flagged: what variable attrributes need overriden in any baseclass(es) used
-        # Override Variable Data Atrributes
-
-        # Initial Actions
+        # INITIAL ACTIONS
         # SETUP ALL DATABASE CONNECTIONS
         from rockAtlas import database
         db = database(
@@ -90,33 +78,32 @@ class pyephemPositions():
 
         return None
 
-    def get(self):
+    def get(self, singleSnapshot):
         """
-        *get the pyephemPositions object*
+        *geneate the pyephem positions*
+
+        **Key Arguments:**
+            -  ``singleSnapshot`` -- just extract positions for a single pyephem snapshot (used for unit testing)
 
         **Return:**
-            - ``pyephemPositions``
-
-        **Usage:**
-        .. todo::
-
-            - add usage info
-            - create a sublime snippet for usage
-            - create cl-util for this method
-            - update the package tutorial if needed
-
-        .. code-block:: python 
-
-            usage code 
+            - ``None`` 
         """
         self.log.info('starting the ``get`` method')
 
-        nextMjd, exposures = self._get_exposures_requiring_pyephem_positions()
-        pyephemDB = self._generate_pyephem_snapshot(mjd=nextMjd)
-        matchedObjects = self._match_pyephem_snapshot_to_atlas_exposures(
-            pyephemDB, exposures)
-        self._add_matched_objects_to_database(matchedObjects)
-        self._update_database_flag(exposures)
+        xephemOE = self._get_xephem_orbital_elements()
+
+        snapshotsRequired = 1
+        while snapshotsRequired > 0:
+            nextMjd, exposures, snapshotsRequired = self._get_exposures_requiring_pyephem_positions()
+            pyephemDB = self._generate_pyephem_snapshot(
+                mjd=nextMjd, xephemOE=xephemOE)
+            matchedObjects = self._match_pyephem_snapshot_to_atlas_exposures(
+                pyephemDB, exposures, nextMjd)
+            self._add_matched_objects_to_database(matchedObjects)
+            self._update_database_flag(exposures)
+
+            if singleSnapshot:
+                snapshotsRequired = 0
 
         self.log.info('completed the ``get`` method')
         return None
@@ -163,15 +150,17 @@ class pyephemPositions():
 
         self.log.info(
             'completed the ``_get_exposures_requiring_pyephem_positions`` method')
-        return nextMjd, exposures
+        return nextMjd, exposures, snapshotsRequired
 
     def _generate_pyephem_snapshot(
             self,
-            mjd):
+            mjd,
+            xephemOE):
         """* generate pyephem snapshot*
 
         **Key Arguments:**
-            - ``mjd`` -- the mjd to generate the pyephem snapshot database for.
+            - ``mjd`` -- the mjd to generate the pyephem snapshot database for
+            - ``xephemOE`` -- a list of xephem database format strings for use with pyephem
 
         **Return:**
             - ``pyephemDB`` -- the pyephem solar-system snapshot database 
@@ -186,19 +175,6 @@ class pyephemPositions():
 
         # GRAB PARAMETERS FROM THE SETTINGS FILE
         magLimit = self.settings["pyephem"]["magnitude limit"]
-        astorbDatabase = self.settings["astorb filepath"]
-
-        try:
-            self.log.debug("attempting to open the file %s" %
-                           (astorbDatabase,))
-            readFile = codecs.open(astorbDatabase, encoding='utf-8', mode='r')
-            thisData = readFile.read()
-            readFile.close()
-        except IOError, e:
-            message = 'could not open the file %s' % (astorbDatabase,)
-            self.log.critical(message)
-            raise IOError(message)
-        readFile.close()
 
         # THE PYEPHEM OBSERVER
         obs = ephem.Observer()
@@ -212,66 +188,10 @@ class pyephemPositions():
             "healpix": []
         }
 
-        # CONVERT ASTORB DATABASE TO XEPHEM DATABASE FORMAT
-        lines = thisData.split("\n")
-        for l in lines:
-
-            if len(l) < 50:
-                continue
-            d = {}
-
-            # PARSE THE LINE FROM astorb.dat (UNNEEDED VALUES COMMENTED OUT)
-            d["mpc_number"] = l[0:7].strip()
-            d["name"] = l[7:26].strip()
-            d["discoverer"] = l[26:41].strip()
-            d["H_abs_mag"] = l[41:48].strip()
-            d["G_slope"] = l[48:54].strip()
-            d["color_b_v"] = l[54:59].strip()
-            d["diameter_km"] = l[59:65].strip()
-            d["class"] = l[65:71].strip()
-            # d["int1"] = l[71:75].strip()
-            # d["int2"] = l[75:79].strip()
-            # d["int3"] = l[79:83].strip()
-            # d["int4"] = l[83:87].strip()
-            # d["int5"] = l[87:91].strip()
-            # d["int6"] = l[91:95].strip()
-            d["orbital_arc_days"] = l[95:101].strip()
-            d["number_obs"] = l[101:106].strip()
-            d["epoch"] = l[106:115].strip()
-            d["M_mean_anomaly_deg"] = l[115:126].strip()
-            d["o_arg_peri_deg"] = l[126:137].strip()
-            d["O_long_asc_node_deg"] = l[137:148].strip()
-            d["i_inclination_deg"] = l[148:158].strip()
-            d["e_eccentricity"] = l[158:169].strip()
-            d["a_semimajor_axis"] = l[169:182].strip()
-            d["orbit_comp_date"] = l[182:191].strip()
-            d["ephem_uncertainty_arcsec"] = l[191:199].strip()
-            d["ephem_uncertainty_change_arcsec_day"] = l[199:208].strip()
-            d["ephem_uncertainty_date"] = l[208:217].strip()
-            # d["peak_ephem_uncertainty_next_arcsec"] = l[217:225].strip()
-            # d["peak_ephem_uncertainty_next_date"] = l[225:234].strip()
-            # d["peak_ephem_uncertainty_10_yrs_from_ceu_arcsec"] = l[
-            #     217:225].strip()
-            # d["peak_ephem_uncertainty_10_yrs_from_ceu_date"] = l[
-            #     242:251].strip()
-            # d["peak_ephem_uncertainty_10_yrs_from_peu_arcsec"] = l[
-            #     251:259].strip()
-            # d["peak_ephem_uncertainty_10_yrs_from_peu_date"] = l[
-            #     259:].strip()
-
-            yyyy = int(d["epoch"][:4])
-            mm = int(d["epoch"][4:6])
-            dd = int(d["epoch"][6:])
-            d["epoch_xeph"] = "%(mm)s/%(dd)s/%(yyyy)s" % locals()
-            xephemStr = "%(mpc_number)s %(name)s,e,%(i_inclination_deg)s,%(O_long_asc_node_deg)s,%(o_arg_peri_deg)s,%(a_semimajor_axis)s,0,%(e_eccentricity)s,%(M_mean_anomaly_deg)s,%(epoch_xeph)s,2000.0,%(H_abs_mag)s,%(G_slope)s" % d
-            xephemStr = xephemStr.strip()
-
-            # TIDYUP
-            if len(d["mpc_number"]) == 0:
-                d["mpc_number"] = None
+        for d in xephemOE:
 
             # GENERATE EPHEMERIS FOR THIS OBJECT
-            minorPlanet = ephem.readdb(xephemStr)
+            minorPlanet = ephem.readdb(d["pyephem_string"])
             minorPlanet.compute(obs)
 
             if minorPlanet.mag > magLimit:
@@ -292,18 +212,24 @@ class pyephemPositions():
     def _match_pyephem_snapshot_to_atlas_exposures(
             self,
             pyephemDB,
-            exposures):
+            exposures,
+            mjd):
         """*match pyephem snapshot to atlas exposures*
 
         **Key Arguments:**
             - ``pyephemDB`` -- the pyephem solar-system snapshot database
             - ``exposures`` -- the atlas exposures to match against the snapshot
+            - ``mjd`` -- the MJD of the pyephem snapshot
 
         **Return:**
             - ``matchedObjects`` -- these objects matched in the neighbourhood of the ATLAS exposures (list of dictionaries)
         """
         self.log.info(
             'starting the ``_match_pyephem_snapshot_to_atlas_exposures`` method')
+
+        e = len(exposures)
+
+        print "Matching %(e)s ATLAS exposures against the pyephem snapshot for MJD = %(mjd)s" % locals()
 
         # MAKE SURE HEALPIX SMALL ENOUGH TO MATCH FOOTPRINTS CORRECTLY
         nside = 1024
@@ -399,6 +325,8 @@ class pyephemPositions():
         self.log.info(
             'starting the ``_add_matched_objects_to_database`` method')
 
+        print "Adding the matched sources to the `pyephem_positions` database table"
+
         insert_list_of_dictionaries_into_database_tables(
             dbConn=self.atlasMoversDBConn,
             log=self.log,
@@ -439,6 +367,32 @@ class pyephemPositions():
 
         self.log.info('completed the ``_update_database_flag`` method')
         return None
+
+    def _get_xephem_orbital_elements(
+            self):
+        """*get xephem orbital elements*
+
+        **Key Arguments:**
+            - ``xephemOE`` -- a list of xephem database format strings for use with pyephem
+        """
+        self.log.info('starting the ``_get_xephem_orbital_elements`` method')
+
+        print "Getting the XEphem orbital element strings from the database"
+
+        sqlQuery = u"""
+            select pyephem_string, name, mpc_number from orbital_elements
+        """ % locals()
+        rows = readquery(
+            log=self.log,
+            sqlQuery=sqlQuery,
+            dbConn=self.atlasMoversDBConn,
+            quiet=False
+        )
+
+        xephemOE = list(rows)
+
+        self.log.info('completed the ``_get_xephem_orbital_elements`` method')
+        return xephemOE
 
     # use the tab-trigger below for new method
     # xt-class-method

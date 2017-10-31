@@ -60,7 +60,7 @@ class test_pyephemPositions(unittest.TestCase):
             log=log,
             settings=settings
         )
-        this.get()
+        this.get(singleSnapshot=True)
 
     def test_get_atlas_exposures_requiring_pyephem_function(self):
 
@@ -69,7 +69,7 @@ class test_pyephemPositions(unittest.TestCase):
             log=log,
             settings=settings
         )
-        nextMjd, exposures = this._get_exposures_requiring_pyephem_positions()
+        nextMjd, exposures, snapshotsRequired = this._get_exposures_requiring_pyephem_positions()
 
         print nextMjd
         print exposures
