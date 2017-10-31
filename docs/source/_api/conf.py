@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # rockAtlas documentation build configuration file, created by
-# sphinx-quickstart on Tue Oct 31 14:12:27 2017.
+# sphinx-quickstart on Tue Oct 31 15:27:08 2017.
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.

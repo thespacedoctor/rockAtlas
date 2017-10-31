@@ -96,3 +96,20 @@ rockAtlas astorb
 ```
 
 This downloads a fresh copy of astorb.dat, parses it and refreshes the cache in the `orbital_elements` table.
+
+PyEphem Positions
+-----------------
+
+To generate the PyEphem positions for moving objects in the neighbourhoods of the ATLAS exposures run the command:
+
+``` sourceCode
+rockAtlas pyephem
+```
+
+Depending on the backlog of ATLAS exposures this may take minutes .. or days! The running log printed to stdout should give you an idea of how long it will take to generate the positions for all new exposures.
+
+To only generate positions for a single pyephem snapshot (few 10s of exposures) run the command with the --one flag:
+
+``` sourceCode
+rockAtlas pyephem --one
+```

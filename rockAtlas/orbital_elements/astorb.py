@@ -33,11 +33,6 @@ class astorb():
 
         To initiate a astorb object, use the following:
 
-        .. todo::
-
-            - add a tutorial about ``astorb`` to documentation
-            - create a blog post about what ``astorb`` does
-
         .. code-block:: python 
 
             from rockAtlas.orbital_elements import astorb
