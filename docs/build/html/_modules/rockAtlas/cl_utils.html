@@ -185,9 +185,11 @@
 <span class="sd">Usage:</span>
 <span class="sd">    rockAtlas init</span>
 <span class="sd">    rockAtlas bookkeeping [-f] [-s &lt;pathToSettingsFile&gt;]</span>
+<span class="sd">    rockAtlas astorb</span>
 
 <span class="sd">Commands:</span>
 <span class="sd">    bookkeeping           update and clean database tables, perform essential bookkeeping tasks</span>
+<span class="sd">    astorb                download astorb.dat orbital elements file and update the orbital elements database table</span>
 
 <span class="sd">Options:</span>
 <span class="sd">    init                  setup the rockAtlas settings file for the first time</span>
@@ -270,6 +272,14 @@
             <span class="n">fullUpdate</span><span class="o">=</span><span class="n">fullFlag</span>
         <span class="p">)</span>
         <span class="n">bk</span><span class="o">.</span><span class="n">clean_all</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">astorb</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">rockAtlas.orbital_elements</span> <span class="k">import</span> <span class="n">astorb</span>
+        <span class="n">oe</span> <span class="o">=</span> <span class="n">astorb</span><span class="p">(</span>
+            <span class="n">log</span><span class="o">=</span><span class="n">log</span><span class="p">,</span>
+            <span class="n">settings</span><span class="o">=</span><span class="n">settings</span>
+        <span class="p">)</span>
+        <span class="n">oe</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span>
 
     <span class="k">if</span> <span class="s2">&quot;dbConn&quot;</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">()</span> <span class="ow">and</span> <span class="n">dbConn</span><span class="p">:</span>
         <span class="n">dbConn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>

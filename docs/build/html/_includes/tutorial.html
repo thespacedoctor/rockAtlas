@@ -185,6 +185,22 @@
 <p>This should create and open the settings file; follow the instructions in the file to populate the missing settings values (usually given an <code class="docutils literal"><span class="pre">XXX</span></code> placeholder).</p>
 <div class="section" id="bookkeeping">
 <h2>Bookkeeping<a class="headerlink" href="#bookkeeping" title="Permalink to this headline">  ∞</a></h2>
+<p>To update the ATLAS Moving Object database tables with recent ATLAS exposures (from last 2 weeks), perform cleanup tasks and to set certain bookkeeping flags run the command:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>rockAtlas bookkeeping
+</pre></div>
+</div>
+<p>or to do a full update (e.g. if the command has not been run in a long time) run the command with the <code class="xref py py-obj docutils literal"><span class="pre">-f,</span> <span class="pre">--full</span></code> flag:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>rockAtlas bookkeeping --full
+</pre></div>
+</div>
+</div>
+<div class="section" id="orbital-elements-cache">
+<h2>Orbital Elements Cache<a class="headerlink" href="#orbital-elements-cache" title="Permalink to this headline">  ∞</a></h2>
+<p>rockAtlas caches the orbital elements from <a class="reference external" href="ftp://ftp.lowell.edu/pub/elgb/astorb.dat.gz">astorb.dat</a> in an <code class="docutils literal"><span class="pre">orbital_elements</span></code> table in the ATLAS Moving Objects database. To update the cache (should be done once a day or so), run the command:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>rockAtlas astorb
+</pre></div>
+</div>
+<p>This downloads a fresh copy of astorb.dat, parses it and refreshes the cache in the <code class="docutils literal"><span class="pre">orbital_elements</span></code> table.</p>
 </div>
 </div>
 

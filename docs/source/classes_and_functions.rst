@@ -6,6 +6,8 @@
 
    rockAtlas.database
    rockAtlas.bookkeeping.bookkeeper
+   rockAtlas.orbital_elements.astorb
+   rockAtlas.positions.pyephemPositions
  
 
 **Functions**
