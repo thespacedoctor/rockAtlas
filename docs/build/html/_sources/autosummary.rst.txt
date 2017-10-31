@@ -9,7 +9,9 @@ Subpackages
 
    rockAtlas
    rockAtlas.bookkeeping
-   rockAtlas.commonutils 
+   rockAtlas.commonutils
+   rockAtlas.orbital_elements
+   rockAtlas.positions 
 
 Modules
 -----------
@@ -30,6 +32,8 @@ Classes
 
    rockAtlas.database
    rockAtlas.bookkeeping.bookkeeper
+   rockAtlas.orbital_elements.astorb
+   rockAtlas.positions.pyephemPositions
    rockAtlas.utKit.utKit 
 
 Functions

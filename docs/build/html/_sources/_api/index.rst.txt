@@ -1,5 +1,5 @@
 .. rockAtlas documentation master file, created by
-   sphinx-quickstart on Mon Oct 30 12:42:39 2017.
+   sphinx-quickstart on Tue Oct 31 14:12:27 2017.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 

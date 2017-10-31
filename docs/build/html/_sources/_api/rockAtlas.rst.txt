@@ -13,6 +13,8 @@ Subpackages
 
     rockAtlas.bookkeeping
     rockAtlas.commonutils
+    rockAtlas.orbital_elements
+    rockAtlas.positions
 
 Submodules
 ----------

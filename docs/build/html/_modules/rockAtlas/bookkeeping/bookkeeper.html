@@ -196,6 +196,8 @@
 <span class="kn">from</span> <span class="nn">fundamentals.mysql</span> <span class="k">import</span> <span class="n">readquery</span>
 <span class="kn">from</span> <span class="nn">fundamentals.mysql</span> <span class="k">import</span> <span class="n">insert_list_of_dictionaries_into_database_tables</span>
 <span class="kn">from</span> <span class="nn">HMpTy.mysql</span> <span class="k">import</span> <span class="n">add_htm_ids_to_mysql_database_table</span>
+<span class="kn">from</span> <span class="nn">astrocalc.times</span> <span class="k">import</span> <span class="n">now</span> <span class="k">as</span> <span class="n">mjdnow</span>
+<span class="kn">from</span> <span class="nn">fundamentals.mysql</span> <span class="k">import</span> <span class="n">directory_script_runner</span>
 
 
 <div class="viewcode-block" id="bookkeeper"><a class="viewcode-back" href="../../../_autosummary/rockAtlas.bookkeeping.bookkeeper.html#rockAtlas.bookkeeping.bookkeeper.bookkeeper">[docs]</a><span class="k">class</span> <span class="nc">bookkeeper</span><span class="p">():</span>
@@ -276,7 +278,8 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">recent</span> <span class="o">=</span> <span class="kc">True</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">import_new_atlas_pointings</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fullUpdate</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">import_new_atlas_pointings</span><span class="p">(</span><span class="n">recent</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_run_bookkeeping_sql_scripts</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;completed the ``get`` method&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">bookkeeper</span></div>
@@ -288,7 +291,7 @@
 <span class="sd">        *Import any new ATLAS pointings from the atlas3/atlas4 databases into the ``atlas_exposures`` table of the Atlas Movers database*</span>
 
 <span class="sd">        **Key Arguments:**</span>
-<span class="sd">            - ``recent`` -- only sync the most recent 2 months of data (speeds things up)</span>
+<span class="sd">            - ``recent`` -- only sync the most recent 2 weeks of data (speeds things up)</span>
 
 <span class="sd">        **Return:**</span>
 <span class="sd">            - None</span>
@@ -310,7 +313,7 @@
             <span class="n">mjd</span> <span class="o">=</span> <span class="n">mjdnow</span><span class="p">(</span>
                 <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span>
             <span class="p">)</span><span class="o">.</span><span class="n">get_mjd</span><span class="p">()</span>
-            <span class="n">recent</span> <span class="o">=</span> <span class="n">mjd</span> <span class="o">-</span> <span class="mi">62</span>
+            <span class="n">recent</span> <span class="o">=</span> <span class="n">mjd</span> <span class="o">-</span> <span class="mi">14</span>
             <span class="n">recent</span> <span class="o">=</span> <span class="s2">&quot; mjd_obs &gt; </span><span class="si">%(recent)s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="nb">locals</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">recent</span> <span class="o">=</span> <span class="s2">&quot;1=1&quot;</span>
@@ -337,17 +340,20 @@
         <span class="c1"># TIDY RESULTS BEFORE IMPORT</span>
         <span class="n">entries</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span>
 
-        <span class="c1"># ADD THE NEW RESULTS TO THE atlas_exposures TABLE</span>
-        <span class="n">insert_list_of_dictionaries_into_database_tables</span><span class="p">(</span>
-            <span class="n">dbConn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">atlasMoversDBConn</span><span class="p">,</span>
-            <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span>
-            <span class="n">dictList</span><span class="o">=</span><span class="n">entries</span><span class="p">,</span>
-            <span class="n">dbTableName</span><span class="o">=</span><span class="s2">&quot;atlas_exposures&quot;</span><span class="p">,</span>
-            <span class="n">uniqueKeyList</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;expname&quot;</span><span class="p">],</span>
-            <span class="n">dateModified</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="n">batchSize</span><span class="o">=</span><span class="mi">2500</span><span class="p">,</span>
-            <span class="n">replace</span><span class="o">=</span><span class="kc">True</span>
-        <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># ADD THE NEW RESULTS TO THE atlas_exposures TABLE</span>
+            <span class="n">insert_list_of_dictionaries_into_database_tables</span><span class="p">(</span>
+                <span class="n">dbConn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">atlasMoversDBConn</span><span class="p">,</span>
+                <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span>
+                <span class="n">dictList</span><span class="o">=</span><span class="n">entries</span><span class="p">,</span>
+                <span class="n">dbTableName</span><span class="o">=</span><span class="s2">&quot;atlas_exposures&quot;</span><span class="p">,</span>
+                <span class="n">uniqueKeyList</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;expname&quot;</span><span class="p">],</span>
+                <span class="n">dateModified</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">batchSize</span><span class="o">=</span><span class="mi">2500</span><span class="p">,</span>
+                <span class="n">replace</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+
+        <span class="n">recent</span> <span class="o">=</span> <span class="n">recent</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;mjd_obs&quot;</span><span class="p">,</span> <span class="s2">&quot;mjd&quot;</span><span class="p">)</span>
 
         <span class="c1"># SELECT ALL OF THE POINTING INFO REQUIRED FROM THE ATLAS4 DATABASE</span>
         <span class="n">sqlQuery</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;&quot;&quot;</span>
@@ -371,17 +377,18 @@
         <span class="c1"># TIDY RESULTS BEFORE IMPORT</span>
         <span class="n">entries</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span>
 
-        <span class="c1"># ADD THE NEW RESULTS TO THE atlas_exposures TABLE</span>
-        <span class="n">insert_list_of_dictionaries_into_database_tables</span><span class="p">(</span>
-            <span class="n">dbConn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">atlasMoversDBConn</span><span class="p">,</span>
-            <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span>
-            <span class="n">dictList</span><span class="o">=</span><span class="n">entries</span><span class="p">,</span>
-            <span class="n">dbTableName</span><span class="o">=</span><span class="s2">&quot;atlas_exposures&quot;</span><span class="p">,</span>
-            <span class="n">uniqueKeyList</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;expname&quot;</span><span class="p">],</span>
-            <span class="n">dateModified</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="n">batchSize</span><span class="o">=</span><span class="mi">2500</span><span class="p">,</span>
-            <span class="n">replace</span><span class="o">=</span><span class="kc">True</span>
-        <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># ADD THE NEW RESULTS TO THE atlas_exposures TABLE</span>
+            <span class="n">insert_list_of_dictionaries_into_database_tables</span><span class="p">(</span>
+                <span class="n">dbConn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">atlasMoversDBConn</span><span class="p">,</span>
+                <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span>
+                <span class="n">dictList</span><span class="o">=</span><span class="n">entries</span><span class="p">,</span>
+                <span class="n">dbTableName</span><span class="o">=</span><span class="s2">&quot;atlas_exposures&quot;</span><span class="p">,</span>
+                <span class="n">uniqueKeyList</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;expname&quot;</span><span class="p">],</span>
+                <span class="n">dateModified</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">batchSize</span><span class="o">=</span><span class="mi">2500</span><span class="p">,</span>
+                <span class="n">replace</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
 
         <span class="c1"># APPEND HTMIDs TO THE atlas_exposures TABLE</span>
         <span class="n">add_htm_ids_to_mysql_database_table</span><span class="p">(</span>
@@ -396,8 +403,34 @@
         <span class="nb">print</span> <span class="s2">&quot;ATLAS pointings synced between ATLAS3/ATLAS4 databases and the ATLAS Movers `atlas_exposures` database table&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;completed the ``import_new_atlas_pointings`` method&#39;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="kc">None</span></div></div>
+        <span class="k">return</span> <span class="kc">None</span></div>
 
+    <span class="k">def</span> <span class="nf">_run_bookkeeping_sql_scripts</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;*run bookkeeping sql scripts*</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;starting the ``_run_bookkeeping_sql_scripts`` method&#39;</span><span class="p">)</span>
+
+        <span class="n">moduleDirectory</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span>
+        <span class="n">mysqlScripts</span> <span class="o">=</span> <span class="n">moduleDirectory</span> <span class="o">+</span> <span class="s2">&quot;/mysql&quot;</span>
+
+        <span class="n">directory_script_runner</span><span class="p">(</span>
+            <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span>
+            <span class="n">pathToScriptDirectory</span><span class="o">=</span><span class="n">mysqlScripts</span><span class="p">,</span>
+            <span class="n">databaseName</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span>
+                <span class="s2">&quot;database settings&quot;</span><span class="p">][</span><span class="s2">&quot;atlasMovers&quot;</span><span class="p">][</span><span class="s2">&quot;db&quot;</span><span class="p">],</span>
+            <span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">loginPath</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;database settings&quot;</span><span class="p">][</span>
+                <span class="s2">&quot;atlasMovers&quot;</span><span class="p">][</span><span class="s2">&quot;loginPath&quot;</span><span class="p">],</span>
+            <span class="n">waitForResult</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">successRule</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">failureRule</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;completed the ``_run_bookkeeping_sql_scripts`` method&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+    <span class="c1"># use the tab-trigger below for new method</span>
     <span class="c1"># xt-class-method</span>
 </pre></div>
 

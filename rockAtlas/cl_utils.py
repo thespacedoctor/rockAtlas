@@ -6,9 +6,11 @@ Documentation for rockAtlas can be found here: http://rockAtlas.readthedocs.org/
 Usage:
     rockAtlas init
     rockAtlas bookkeeping [-f] [-s <pathToSettingsFile>]
+    rockAtlas astorb
 
 Commands:
     bookkeeping           update and clean database tables, perform essential bookkeeping tasks
+    astorb                download astorb.dat orbital elements file and update the orbital elements database table
 
 Options:
     init                  setup the rockAtlas settings file for the first time
@@ -91,6 +93,14 @@ def main(arguments=None):
             fullUpdate=fullFlag
         )
         bk.clean_all()
+
+    if astorb:
+        from rockAtlas.orbital_elements import astorb
+        oe = astorb(
+            log=log,
+            settings=settings
+        )
+        oe.refresh()
 
     if "dbConn" in locals() and dbConn:
         dbConn.commit()

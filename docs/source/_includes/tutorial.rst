@@ -26,5 +26,16 @@ or to do a full update (e.g. if the command has not been run in a long time) run
     
     rockAtlas bookkeeping --full
 
+Orbital Elements Cache
+----------------------
+
+rockAtlas caches the orbital elements from `astorb.dat <ftp://ftp.lowell.edu/pub/elgb/astorb.dat.gz>`_ in an ``orbital_elements`` table in the ATLAS Moving Objects database. To update the cache (should be done once a day or so), run the command:
+
+.. code-block:: bash 
+    
+    rockAtlas astorb
+
+This downloads a fresh copy of astorb.dat, parses it and refreshes the cache in the ``orbital_elements`` table.
+
 
     
