@@ -15,7 +15,9 @@ install_requires = [
     'fundamentals',
     'hmpty',
     'pymysql',
-    'astrocalc'
+    'astrocalc',
+    'pyephem',
+    'healpy'
 ]
 
 # READ THE DOCS SERVERS

@@ -2,7 +2,7 @@
   "folders": [ { "path": "/Users/Dave/git_repos/rockAtlas" } ],
   "settings": {
       "python_test":{
-          "command": "/Users/Dave/anaconda/bin/nose2",
+          "command": "/Users/Dave/anaconda/envs/rockAtlas/bin/nose2",
           "working_dir": "/Users/Dave/git_repos/rockAtlas/rockAtlas",
           "color_scheme": "dark"
     }
