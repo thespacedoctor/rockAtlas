@@ -54,6 +54,8 @@ To only generate positions for a single pyephem snapshot (few 10s of exposures) 
     
     rockAtlas pyephem --one
 
+Note, for a known moving object to be included in the exposure match it must be flagged with ``include_in_match`` in the ``orbital_elements`` database table.
+
 Orbfit Positions
 ----------------
 

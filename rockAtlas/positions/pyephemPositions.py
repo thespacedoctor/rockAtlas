@@ -385,7 +385,7 @@ class pyephemPositions():
         print "Getting the XEphem orbital element strings from the database"
 
         sqlQuery = u"""
-            select pyephem_string, name, mpc_number from orbital_elements
+            select pyephem_string, name, mpc_number from orbital_elements where include_in_match = 1
         """ % locals()
         rows = readquery(
             log=self.log,
