@@ -56,7 +56,7 @@ class pyephemPositions():
             self,
             log,
             settings=False,
-            dev_flag=True
+            dev_flag=False
     ):
         self.log = log
         log.debug("instansiating a new 'pyephemPositions' object")
@@ -95,6 +95,8 @@ class pyephemPositions():
         snapshotsRequired = 1
         while snapshotsRequired > 0:
             nextMjd, exposures, snapshotsRequired = self._get_exposures_requiring_pyephem_positions()
+            if snapshotsRequired == 0:
+                return
             pyephemDB = self._generate_pyephem_snapshot(
                 mjd=nextMjd, xephemOE=xephemOE)
             matchedObjects = self._match_pyephem_snapshot_to_atlas_exposures(
@@ -133,6 +135,9 @@ class pyephemPositions():
         snapshotsRequired = len(rows)
 
         print "There are currently %(snapshotsRequired)s more pyephem snapshots required " % locals()
+
+        if snapshotsRequired == 0:
+            return [], [], 0
 
         nextMjd = rows[0]["pyephem_mjd"]
 

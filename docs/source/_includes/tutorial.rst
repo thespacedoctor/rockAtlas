@@ -54,6 +54,23 @@ To only generate positions for a single pyephem snapshot (few 10s of exposures) 
     
     rockAtlas pyephem --one
 
+Orbfit Positions
+----------------
+
+To tighten up the positions of moving objects found by PyEphem to be located in the neighbourhood of an ATLAS exposure, and reject those movers not found exactly within the exposure FOV, run the command:
+
+.. code-block:: bash 
+    
+    rockAtlas orbfit
+
+Again the running log printed to stdout will give you an idea of how long it will take to process all of the ATLAS exposures that have already been process using PyEphem but still need orbfit to be run.
+
+To only generate orbfit positions for a single ATLAS exposure run the command with the `--one` flag:
+
+.. code-block:: bash 
+    
+    rockAtlas orbfit --one
+
 
 
 

@@ -17,10 +17,12 @@ Usage:
     rockAtlas init
     rockAtlas bookkeeping [-f] [-s <pathToSettingsFile>]
     rockAtlas astorb
+    rockAtlas pyephem [-o]
 
 Commands:
     bookkeeping           update and clean database tables, perform essential bookkeeping tasks
     astorb                download astorb.dat orbital elements file and update the orbital elements database table
+    pyephem               generate the pyephem positions overlapping the ATLAS exposures in the moving objects database
 
 Options:
     init                  setup the rockAtlas settings file for the first time
@@ -28,6 +30,7 @@ Options:
     -v, --version         show version
     -s, --settings        the settings file
     -f, --full            a full update (not just recently changed exposures and sources)
+    -o, --one             only generate positions for a single pyephem snapshot (few 10s of exposures - useful for testing)
 ```
 
 Installation
@@ -112,4 +115,21 @@ To only generate positions for a single pyephem snapshot (few 10s of exposures) 
 
 ``` sourceCode
 rockAtlas pyephem --one
+```
+
+Orbfit Positions
+----------------
+
+To tighten up the positions of moving objects found by PyEphem to be located in the neighbourhood of an ATLAS exposure, and reject those movers not found exactly within the exposure FOV, run the command:
+
+``` sourceCode
+rockAtlas orbfit
+```
+
+Again the running log printed to stdout will give you an idea of how long it will take to process all of the ATLAS exposures that have already been process using PyEphem but still need orbfit to be run.
+
+To only generate orbfit positions for a single ATLAS exposure run the command with the --one flag:
+
+``` sourceCode
+rockAtlas orbfit --one
 ```

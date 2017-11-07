@@ -33,6 +33,7 @@ Classes
    rockAtlas.database
    rockAtlas.bookkeeping.bookkeeper
    rockAtlas.orbital_elements.astorb
+   rockAtlas.positions.orbfitPositions
    rockAtlas.positions.pyephemPositions
    rockAtlas.utKit.utKit 
 

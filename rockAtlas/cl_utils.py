@@ -8,11 +8,13 @@ Usage:
     rockAtlas bookkeeping [-f] [-s <pathToSettingsFile>]
     rockAtlas astorb
     rockAtlas pyephem [-o]
+    rockAtlas orbfit [-o]
 
 Commands:
     bookkeeping           update and clean database tables, perform essential bookkeeping tasks
     astorb                download astorb.dat orbital elements file and update the orbital elements database table
     pyephem               generate the pyephem positions overlapping the ATLAS exposures in the moving objects database
+    orbfit                generate the orbfit positions overlapping the ATLAS exposures in the moving objects database
 
 Options:
     init                  setup the rockAtlas settings file for the first time
@@ -110,9 +112,19 @@ def main(arguments=None):
         from rockAtlas.positions import pyephemPositions
         pyeph = pyephemPositions(
             log=log,
-            settings=settings
+            settings=settings,
+            dev_flag=True
         )
         pyeph.get(singleSnapshot=oneFlag)
+
+    if orbfit:
+        from rockAtlas.positions import orbfitPositions
+        oe = orbfitPositions(
+            log=log,
+            settings=settings,
+            dev_flag=True
+        )
+        oe.get(singleExposure=oneFlag)
 
     if "dbConn" in locals() and dbConn:
         dbConn.commit()

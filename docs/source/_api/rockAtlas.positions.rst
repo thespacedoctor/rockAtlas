@@ -11,5 +11,6 @@ Submodules
 
 .. toctree::
 
+   rockAtlas.positions.orbfitPositions
    rockAtlas.positions.pyephemPositions
 

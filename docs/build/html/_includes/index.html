@@ -10,7 +10,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Installation &mdash; rockAtlas v0.2.0 documentation</title>
+  <title>Installation &mdash; rockAtlas v0.2.1 documentation</title>
   
 
   
@@ -43,7 +43,7 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="rockAtlas v0.2.0 documentation" href="../index.html"/>
+    <link rel="top" title="rockAtlas v0.2.1 documentation" href="../index.html"/>
         <link rel="next" title="Subpackages" href="../autosummary.html"/>
         <link rel="prev" title="rockAtlas" href="../index.html"/> 
 
@@ -77,7 +77,7 @@
             
             
               <div class="version">
-                v0.2.0
+                v0.2.1
               </div>
             
           
@@ -117,6 +117,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#bookkeeping">Bookkeeping</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#orbital-elements-cache">Orbital Elements Cache</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyephem-positions">PyEphem Positions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#orbfit-positions">Orbfit Positions</a></li>
 </ul>
 </li>
 </ul>
@@ -236,11 +237,13 @@ Usage:
     rockAtlas bookkeeping <span class="o">[</span>-f<span class="o">]</span> <span class="o">[</span>-s &lt;pathToSettingsFile&gt;<span class="o">]</span>
     rockAtlas astorb
     rockAtlas pyephem <span class="o">[</span>-o<span class="o">]</span>
+    rockAtlas orbfit <span class="o">[</span>-o<span class="o">]</span>
 
 Commands:
     bookkeeping           update and clean database tables, perform essential bookkeeping tasks
     astorb                download astorb.dat orbital elements file and update the orbital elements database table
     pyephem               generate the pyephem positions overlapping the ATLAS exposures in the moving objects database
+    orbfit                generate the orbfit positions overlapping the ATLAS exposures in the moving objects database
 
 Options:
     init                  setup the rockAtlas settings file <span class="k">for</span> the first <span class="nb">time</span>
@@ -295,6 +298,18 @@ Options:
 </pre></div>
 </div>
 </div>
+<div class="section" id="orbfit-positions">
+<h2>Orbfit Positions<a class="headerlink" href="#orbfit-positions" title="Permalink to this headline">  ∞</a></h2>
+<p>To tighten up the positions of moving objects found by PyEphem to be located in the neighbourhood of an ATLAS exposure, and reject those movers not found exactly within the exposure FOV, run the command:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>rockAtlas orbfit
+</pre></div>
+</div>
+<p>Again the running log printed to stdout will give you an idea of how long it will take to process all of the ATLAS exposures that have already been process using PyEphem but still need orbfit to be run.</p>
+<p>To only generate orbfit positions for a single ATLAS exposure run the command with the <code class="xref py py-obj docutils literal"><span class="pre">--one</span></code> flag:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>rockAtlas orbfit --one
+</pre></div>
+</div>
+</div>
 </div>
 
 
@@ -341,7 +356,7 @@ Options:
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'v0.2.0',
+            VERSION:'v0.2.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
