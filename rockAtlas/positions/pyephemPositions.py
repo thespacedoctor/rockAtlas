@@ -370,6 +370,19 @@ class pyephemPositions():
             dbConn=self.atlasMoversDBConn,
         )
 
+        sqlQuery = """update 
+            atlas_exposures
+        set orbfit_positions = 1
+        WHERE
+            pyephem_positions = 1
+                AND orbfit_positions = 0 and expname not in (select distinct expname from pyephem_positions);""" % locals(
+        )
+        writequery(
+            log=self.log,
+            sqlQuery=sqlQuery,
+            dbConn=self.atlasMoversDBConn,
+        )
+
         self.log.info('completed the ``_update_database_flag`` method')
         return None
 
