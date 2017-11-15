@@ -9,15 +9,18 @@ Usage:
     rockAtlas astorb
     rockAtlas pyephem [-o]
     rockAtlas orbfit [-o]
+    rockAtlas cache <days>
 
 Commands:
     bookkeeping           update and clean database tables, perform essential bookkeeping tasks
     astorb                download astorb.dat orbital elements file and update the orbital elements database table
     pyephem               generate the pyephem positions overlapping the ATLAS exposures in the moving objects database
     orbfit                generate the orbfit positions overlapping the ATLAS exposures in the moving objects database
+    cache                 download a cache of ATLAS dophot data to chew on (cache limit set in settings file)
 
 Options:
     init                  setup the rockAtlas settings file for the first time
+    days                  number of days to cache
     -h, --help            show this help message
     -v, --version         show version
     -s, --settings        the settings file
@@ -125,6 +128,14 @@ def main(arguments=None):
             dev_flag=True
         )
         oe.get(singleExposure=oneFlag)
+
+    if cache:
+        from rockAtlas.phot import download
+        data = download(
+            log=log,
+            settings=settings
+        )
+        data.get(days=days)
 
     if "dbConn" in locals() and dbConn:
         dbConn.commit()
