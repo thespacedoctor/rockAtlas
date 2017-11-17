@@ -13,13 +13,16 @@
 import sys
 import os
 os.environ['TERM'] = 'vt100'
+import codecs
 from fundamentals import tools
 from subprocess import Popen, PIPE, STDOUT
 from fundamentals.mysql import readquery
 from fundamentals import fmultiprocess
 from fundamentals.mysql import writequery
-
-
+from fundamentals.files import recursive_directory_listing
+from fundamentals.mysql import insert_list_of_dictionaries_into_database_tables
+import pymysql as ms
+from rockAtlas.bookkeeping import bookkeeper
 # OR YOU CAN REMOVE THE CLASS BELOW AND ADD A WORKER FUNCTION ... SNIPPET TRIGGER BELOW
 # xt-worker-def
 
@@ -107,7 +110,7 @@ class download():
 
         # DOWNLOAD THE DATA IN PARALLEL
         results = fmultiprocess(log=self.log, function=self._download_one_night_of_atlas_data,
-                                inputArray=mjds, archivePath=archivePath, dbConn=self.atlasMoversDBConn)
+                                inputArray=mjds, archivePath=archivePath)
 
         # UPDATE BOOKKEEPING
         mjds = []
@@ -121,6 +124,13 @@ class download():
             sqlQuery=sqlQuery,
             dbConn=self.atlasMoversDBConn,
         )
+
+        bk = bookkeeper(
+            log=self.log,
+            settings=self.settings,
+            fullUpdate=False
+        )
+        bk.clean_all()
 
         self.log.info('completed the ``get`` method')
         return None
@@ -193,8 +203,7 @@ class download():
     def _download_one_night_of_atlas_data(
             self,
             mjd,
-            archivePath,
-            dbConn):
+            archivePath):
         """*summary of function*
 
         **Key Arguments:**
@@ -202,7 +211,29 @@ class download():
             - ``archivePath`` -- the path to the root of the local archive
             - ``dbConn`` -- connector for the atlas movers database            
         """
-        cmd = "rsync -avzL --include='*.dph' --include='*/' --exclude='*' dyoung@atlas-base-adm01.ifa.hawaii.edu:/atlas/red/02a/%(mjd)s %(archivePath)s/02a/" % locals(
+
+        # SETUP A DATABASE CONNECTION FOR THE remote database
+        host = self.settings["database settings"]["atlasMovers"]["host"]
+        user = self.settings["database settings"]["atlasMovers"]["user"]
+        passwd = self.settings["database settings"]["atlasMovers"]["password"]
+        dbName = self.settings["database settings"]["atlasMovers"]["db"]
+        try:
+            sshPort = self.settings["database settings"][
+                "atlasMovers"]["tunnel"]["port"]
+        except:
+            sshPort = False
+        thisConn = ms.connect(
+            host=host,
+            user=user,
+            passwd=passwd,
+            db=dbName,
+            port=sshPort,
+            use_unicode=True,
+            charset='utf8'
+        )
+        thisConn.autocommit(True)
+
+        cmd = "rsync -avzL --include='*.dph' --include='*.meta' --include='*/' --exclude='*' dyoung@atlas-base-adm01.ifa.hawaii.edu:/atlas/red/02a/%(mjd)s %(archivePath)s/02a/" % locals(
         )
 
         p = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True)
@@ -211,12 +242,94 @@ class download():
             print 'error in rsyncing MJD %(mjd)s data: %(stderr)s' % locals()
             return None
 
-        cmd = "rsync -avzL --include='*.dph' --include='*/' --exclude='*' dyoung@atlas-base-adm01.ifa.hawaii.edu:/atlas/red/01a/%(mjd)s %(archivePath)s/01a/" % locals(
+        cmd = "rsync -avzL --include='*.dph' --include='*.meta' --include='*/' --exclude='*' dyoung@atlas-base-adm01.ifa.hawaii.edu:/atlas/red/01a/%(mjd)s %(archivePath)s/01a/" % locals(
         )
         p = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True)
         stdout, stderr = p.communicate()
         if len(stderr):
             print 'error in rsyncing MJD %(mjd)s data: %(stderr)s' % locals()
             return None
+
+        theseFiles = recursive_directory_listing(
+            log=self.log,
+            baseFolderPath="%(archivePath)s/02a/%(mjd)s" % locals(),
+            whatToList="files"  # all | files | dirs
+        )
+        theseFiles += recursive_directory_listing(
+            log=self.log,
+            baseFolderPath="%(archivePath)s/01a/%(mjd)s" % locals(),
+            whatToList="files"  # all | files | dirs
+        )
+
+        metaFilenames = []
+        metaFilenames[:] = [(os.path.splitext(os.path.basename(m))[
+            0], m) for m in theseFiles if "meta" in m]
+
+        metaDict = {}
+        for m in metaFilenames:
+            metaDict[m[0]] = m[1]
+
+        sqlQuery = u"""
+            select expname from atlas_exposures where floor(mjd) = %(mjd)s 
+        """ % locals()
+        rows = readquery(
+            log=self.log,
+            sqlQuery=sqlQuery,
+            dbConn=thisConn
+        )
+
+        dbExps = []
+        dbExps[:] = [r["expname"]for r in rows]
+
+        missingMeta = []
+        missingMeta[:] = [m for m in metaDict.keys() if m not in dbExps]
+
+        fitskw = {
+            "MJD-OBS": "mjd",
+            "OBJECT": "atlas_object_id",
+            "RA": "raDeg",
+            "DEC": "decDeg",
+            "FILTER": "filter",
+            "EXPTIME": "exp_time",
+            "OBSNAME": "expname"
+        }
+
+        allData = []
+        for m in missingMeta:
+
+            pathToReadFile = metaDict[m]
+            try:
+                self.log.debug("attempting to open the file %s" %
+                               (pathToReadFile,))
+                readFile = codecs.open(
+                    pathToReadFile, encoding='utf-8', mode='r')
+                thisData = readFile.read()
+                readFile.close()
+            except IOError, e:
+                message = 'could not open the file %s' % (pathToReadFile,)
+                self.log.critical(message)
+                raise IOError(message)
+
+            fitsDict = {}
+            for l in thisData.split("\n"):
+                kw = l.split("=")[0].strip()
+                if kw in fitskw.keys() and kw not in fitsDict.keys():
+                    fitsDict[fitskw[kw]] = l.split(
+                        "=")[1].split("/")[0].strip().replace("'", "")
+
+            if len(fitsDict) == 7:
+                allData.append(fitsDict)
+
+        insert_list_of_dictionaries_into_database_tables(
+            dbConn=thisConn,
+            log=self.log,
+            dictList=allData,
+            dbTableName="atlas_exposures",
+            dateModified=True,
+            batchSize=2500,
+            replace=True
+        )
+
+        thisConn.close()
 
         return str(int(mjd))
