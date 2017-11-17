@@ -157,7 +157,7 @@ class orbfitPositions():
 
         sqlQuery = u"""
             SELECT
-                a.expname, a.mjd, a.raDeg, a.decDeg, p.object_name, p.mpc_number, o.astorb_string
+                a.expname, a.mjd, a.raDeg, a.decDeg, p.object_name, p.mpc_number, o.astorb_string, a.mjd+a.exp_time/(2*3600*24) as `mjd_mid`
             FROM
                 atlas_exposures a,
                 pyephem_positions p,
@@ -195,7 +195,7 @@ class orbfitPositions():
                 expsoureObjects[o["expname"]] = {
                     "ra": o["raDeg"],
                     "dec": o["decDeg"],
-                    "mjd": o["mjd"],
+                    "mjd": o["mjd_mid"],
                     "objects": [[o["mpc_number"], o["object_name"]]]
                 }
             else:
