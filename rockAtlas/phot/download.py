@@ -39,12 +39,7 @@ class download():
 
         To setup your logger, settings and database connections, please use the ``fundamentals`` package (`see tutorial here <http://fundamentals.readthedocs.io/en/latest/#tutorial>`_). 
 
-        To initiate a download object, use the following:
-
-        .. todo::
-
-            - create cl-util for this class
-            - add a tutorial about ``download`` to documentation
+        To initiate a download object, and download the next 5 days worth of ATLAS data from Hawaii use the following:
 
         .. code-block:: python 
 
@@ -53,7 +48,7 @@ class download():
                 log=log,
                 settings=settings
             )
-            data.get()   
+            data.get(days=5)   
     """
     # Initialisation
 

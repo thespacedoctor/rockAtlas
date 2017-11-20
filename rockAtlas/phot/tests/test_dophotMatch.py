@@ -61,13 +61,29 @@ class test_dophotMatch(unittest.TestCase):
             log=log,
             settings=settings
         )
-        exposureIds = this._select_exposures_requiring_dophot_extraction()
+        exposureIds, remaining = this._select_exposures_requiring_dophot_extraction()
 
         cachePath = settings["atlas archive path"]
 
-        # print exposureIds
-        this._extract_phot_from_exposure(
+        print exposureIds
+        dophotMatches = this._extract_phot_from_exposure(
             expId=exposureIds[0], cachePath=cachePath)
+
+        this._add_dophot_matches_to_database(
+            dophotMatches=[dophotMatches], exposureIds=[exposureIds[0]])
+
+        print time.time() - t1
+
+    def test_dophotMatch_get_function(self):
+
+        t1 = time.time()
+
+        from rockAtlas.phot import dophotMatch
+        this = dophotMatch(
+            log=log,
+            settings=settings
+        )
+        this.get()
 
         print time.time() - t1
 

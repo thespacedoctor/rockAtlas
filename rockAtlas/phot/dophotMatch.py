@@ -15,8 +15,13 @@ import os
 os.environ['TERM'] = 'vt100'
 from fundamentals import tools
 from fundamentals.mysql import writequery, readquery
+from fundamentals import fmultiprocess
 import numpy as np
 import codecs
+from HMpTy import HTM
+import pymysql as ms
+from fundamentals.mysql import insert_list_of_dictionaries_into_database_tables
+from rockAtlas.bookkeeping import bookkeeper
 
 
 class dophotMatch():
@@ -31,23 +36,18 @@ class dophotMatch():
 
         To setup your logger, settings and database connections, please use the ``fundamentals`` package (`see tutorial here <http://fundamentals.readthedocs.io/en/latest/#tutorial>`_).
 
-        To initiate a dophotMatch object, use the following:
-
-        .. todo::
-
-            - add usage info
-            - create a sublime snippet for usage
-            - create cl-util for this class
-            - add a tutorial about ``dophotMatch`` to documentation
-            - create a blog post about what ``dophotMatch`` does
+        To initiate a dophotMatch object, and then match the orbfit predicted positions of known asteroids against the positions recored in the local cache of dophot files. use the following:
 
         .. code-block:: python
 
-            usage code
+            from rockAtlas.phot import dophotMatch
+            dp = dophotMatch(
+                log=log,
+                settings=settings
+            )
+            dp.get()
     """
     # Initialisation
-    # 1. @flagged: what are the unique attrributes for each object? Add them
-    # to __init__
 
     def __init__(
             self,
@@ -59,12 +59,6 @@ class dophotMatch():
         log.debug("instansiating a new 'dophotMatch' object")
         self.settings = settings
         # xt-self-arg-tmpx
-
-        # 2. @flagged: what are the default attrributes each object could have? Add them to variable attribute set here
-        # Variable Data Atrributes
-
-        # 3. @flagged: what variable attrributes need overriden in any baseclass(es) used
-        # Override Variable Data Atrributes
 
         # INITIAL ACTIONS
         # SETUP ALL DATABASE CONNECTIONS
@@ -82,44 +76,51 @@ class dophotMatch():
 
     def get(self):
         """
-        *get the dophotMatch object*
-
-        **Return:**
-            - ``dophotMatch``
-
-        **Usage:**
-        .. todo::
-
-            - add usage info
-            - create a sublime snippet for usage
-            - create cl-util for this method
-            - update the package tutorial if needed
-
-        .. code-block:: python
-
-            usage code
-        """
-        self.log.info('starting the ``get`` method')
-
-        dophotMatch = None
-
-        self.log.info('completed the ``get`` method')
-        return dophotMatch
-
-    def _select_exposures_requiring_dophot_extraction(
-            self):
-        """* select exposures requiring dophot extraction*
-
-        **Key Arguments:**
-            # -
+        *match the orbfit predicted positions of known asteroids against the positions recored in the local cache of dophot files*
 
         **Return:**
             - None
+
+        **Usage:**
+
+            See class docstring
+        """
+        self.log.info('starting the ``get`` method')
+
+        remaining = 1
+        cachePath = self.settings["atlas archive path"]
+
+        # SELECT 100 EXPOSURES REQUIRING DOPHOT EXTRACTION
+        while remaining > 0:
+            exposureIds, remaining = self._select_exposures_requiring_dophot_extraction()
+            print "%(remaining)s locally cached dophot files remain needing to be parsed for orbfit predicted known asteroid positions" % locals()
+            if remaining == 0:
+                continue
+            dophotMatches = fmultiprocess(log=self.log, function=self._extract_phot_from_exposure,
+                                          inputArray=exposureIds, cachePath=cachePath)
+            self._add_dophot_matches_to_database(
+                dophotMatches=dophotMatches, exposureIds=exposureIds)
+
+        self._add_value_to_dophot_table()
+
+        self.log.info('completed the ``get`` method')
+        return None
+
+    def _select_exposures_requiring_dophot_extraction(
+            self,
+            batch=100):
+        """* select exposures requiring dophot extraction*
+
+        **Key Arguments:**
+            - ``batch`` -- the batch size of dophot file to process
+
+        **Return:**
+            - ``expnames`` -- the names of the expsoures in the batch
+            - ``remaining`` -- the number of exposured remainging that require orbfit/dophot crossmatching 
         """
         self.log.info(
             'starting the ``_select_exposures_requiring_dophot_extraction`` method')
 
-        from fundamentals.mysql import readquery
         sqlQuery = u"""
             select expname, floor(mjd) as mjd from atlas_exposures where local_data = 1 and dophot_match = 0;
         """ % locals()
@@ -130,12 +131,14 @@ class dophotMatch():
             quiet=False
         )
 
+        remaining = len(rows)
+
         expnames = []
-        expnames[:] = [(r["expname"], int(r["mjd"])) for r in rows]
+        expnames[:] = [(r["expname"], int(r["mjd"])) for r in rows[:batch]]
 
         self.log.info(
             'completed the ``_select_exposures_requiring_dophot_extraction`` method')
-        return expnames
+        return expnames, remaining
 
     def _extract_phot_from_exposure(
             self,
@@ -148,13 +151,35 @@ class dophotMatch():
             - ``cachePath`` -- path to the cache of ATLAS data
 
         **Return:**
-            - None
+            - ``dophotRows`` -- the list of matched dophot rows
         """
         self.log.info('starting the ``_extract_phot_from_exposure`` method')
 
+        # SETUP A DATABASE CONNECTION FOR THE remote database
+        host = self.settings["database settings"]["atlasMovers"]["host"]
+        user = self.settings["database settings"]["atlasMovers"]["user"]
+        passwd = self.settings["database settings"]["atlasMovers"]["password"]
+        dbName = self.settings["database settings"]["atlasMovers"]["db"]
+        try:
+            sshPort = self.settings["database settings"][
+                "atlasMovers"]["tunnel"]["port"]
+        except:
+            sshPort = False
+        thisConn = ms.connect(
+            host=host,
+            user=user,
+            passwd=passwd,
+            db=dbName,
+            port=sshPort,
+            use_unicode=True,
+            charset='utf8'
+        )
+        thisConn.autocommit(True)
+
+        matchRadius = float(self.settings["dophot search radius"])
+
         dophotFilePath = cachePath + "/" + \
             expId[0][:3] + "/" + str(expId[1]) + "/" + expId[0] + ".dph"
-        print dophotFilePath
 
         # TEST THE FILE EXISTS
         exists = os.path.exists(dophotFilePath)
@@ -166,11 +191,11 @@ class dophotMatch():
             writequery(
                 log=self.log,
                 sqlQuery=sqlQuery,
-                dbConn=self.atlasMoversDBConn,
+                dbConn=thisConn,
             )
             self.log.error(
                 'the dophot file %(expId)s.dph is missing from the local ATLAS data cache' % locals())
-            return None
+            return []
 
         try:
             self.log.debug("attempting to open the file %s" %
@@ -186,8 +211,8 @@ class dophotMatch():
 
         ra = []
         dec = []
-        rows = dophotData.split("\n")
-        for r in rows[1:]:
+        dophotLines = dophotData.split("\n")[1:]
+        for r in dophotLines:
             r = r.split()
             if len(r):
                 ra.append(float(r[0]))
@@ -197,23 +222,24 @@ class dophotMatch():
         dec = np.array(dec)
 
         sqlQuery = u"""
-            select ra_deg, dec_deg from orbfit_positions where expname = "%(expId)s"
+            select * from orbfit_positions where expname = "%(expId)s"
         """ % locals()
-        rows = readquery(
+        orbFitRows = readquery(
             log=self.log,
             sqlQuery=sqlQuery,
-            dbConn=self.atlasMoversDBConn,
+            dbConn=thisConn,
         )
 
+        potSources = len(orbFitRows)
+
         raOrb = []
-        raOrb[:] = [r["ra_deg"] for r in rows]
+        raOrb[:] = [r["ra_deg"] for r in orbFitRows]
         decOrb = []
-        decOrb[:] = [r["dec_deg"] for r in rows]
+        decOrb[:] = [r["dec_deg"] for r in orbFitRows]
 
         raOrb = np.array(raOrb)
         decOrb = np.array(decOrb)
 
-        from HMpTy import HTM
         mesh = HTM(
             depth=12,
             log=self.log
@@ -223,15 +249,139 @@ class dophotMatch():
             dec1=dec,
             ra2=raOrb,
             dec2=decOrb,
-            radius=3.6 / 3600.,
+            radius=matchRadius / 3600.,
             convertToArray=False,
             maxmatch=0  # 1 = match closest 1, 0 = match all
         )
 
+        dophotRows = []
         for m1, m2, s in zip(matchIndices1, matchIndices2, seps):
-            print ra[m1], dec[m1], " -> ", s * 3600., " arcsec -> ", raOrb[m2], decOrb[m2]
+            # print ra[m1], dec[m1], " -> ", s * 3600., " arcsec -> ",
+            # raOrb[m2], decOrb[m2]
+            dList = dophotLines[m1].split()
+            dDict = {
+                "ra_deg": dList[0],
+                "dec_deg": dList[1],
+                "m": dList[2],
+                "idx": dList[3],
+                "type": dList[4],
+                "xtsk": dList[5],
+                "ytsk": dList[6],
+                "fitmag": dList[7],
+                "dfitmag": dList[8],
+                "sky": dList[9],
+                "major": dList[10],
+                "minor": dList[11],
+                "phi": dList[12],
+                "probgal": dList[13],
+                "apmag": dList[14],
+                "dapmag": dList[15],
+                "apsky": dList[16],
+                "ap_fit": dList[17],
+                "orbfit_separation_arcsec": s * 3600.,
+                "orbfit_postions_id": orbFitRows[m2]["primaryId"],
+                "expname": expId
+            }
+            dophotRows.append(dDict)
 
         self.log.info('completed the ``_extract_phot_from_exposure`` method')
+        return dophotRows
+
+    def _add_dophot_matches_to_database(
+            self,
+            dophotMatches,
+            exposureIds):
+        """*add dophot matches to database*
+
+        **Key Arguments:**
+            - ``dophotMatches`` -- a list of lists of dophot matches
+            - ``exposureIds`` -- the ATLAS exposure IDs these matches were found in
+
+        **Return:**
+            - None
+        """
+        self.log.info(
+            'starting the ``_add_dophot_matches_to_database`` method')
+
+        insertList = []
+        for d in dophotMatches:
+            insertList += d
+
+        insert_list_of_dictionaries_into_database_tables(
+            dbConn=self.atlasMoversDBConn,
+            log=self.log,
+            dictList=insertList,
+            dbTableName="dophot_photometry",
+            uniqueKeyList=["expname", "idx"],
+            dateModified=True,
+            batchSize=2500,
+            replace=True
+        )
+
+        exps = []
+        exps[:] = [e[0] for e in exposureIds]
+
+        exps = ('","').join(exps)
+
+        sqlQuery = """update atlas_exposures set dophot_match = 1 where dophot_match = 0 and expname in ("%(exps)s")""" % locals(
+        )
+        writequery(
+            log=self.log,
+            sqlQuery=sqlQuery,
+            dbConn=self.atlasMoversDBConn
+        )
+
+        self.log.info(
+            'completed the ``_add_dophot_matches_to_database`` method')
+        return None
+
+    def _add_value_to_dophot_table(
+            self):
+        """*add value to dophot table*
+        """
+        self.log.info('starting the ``_add_value_to_dophot_table`` method')
+
+        # ADD SEPARATION RANK TO DOPHOT TABLE
+        sqlQuery = """
+UPDATE dophot_photometry a,
+    (SELECT 
+        t.primaryId,
+            (SELECT 
+                    COUNT(*) + 1
+                FROM
+                    dophot_photometry t2
+                WHERE
+                    t2.expname = t.expname
+                        AND t2.orbfit_postions_id = t.orbfit_postions_id
+                        AND t2.orbfit_separation_arcsec < t.orbfit_separation_arcsec) AS match_rank
+    FROM
+        dophot_photometry t where t.sep_rank is null) b 
+SET 
+    a.sep_rank = b.match_rank
+WHERE
+    a.primaryId = b.primaryId
+        AND a.sep_rank IS NULL;
+""" % locals()
+        writequery(
+            log=self.log,
+            sqlQuery=sqlQuery,
+            dbConn=self.atlasMoversDBConn
+        )
+
+        sqlQuery = """UPDATE dophot_photometry d,
+    orbfit_positions o 
+SET 
+    d.object_name = o.object_name,
+    d.orbital_elements_id = o.orbital_elements_id
+WHERE
+    d.orbfit_postions_id = o.primaryId;""" % locals()
+        writequery(
+            log=self.log,
+            sqlQuery=sqlQuery,
+            dbConn=self.atlasMoversDBConn
+        )
+
+        self.log.info('completed the ``_add_value_to_dophot_table`` method')
         return None
 
     # use the tab-trigger below for new method

@@ -77,16 +77,8 @@ class astorb():
             - ``astorb``
 
         **Usage:**
-        .. todo::
 
-            - add usage info
-            - create a sublime snippet for usage
-            - create cl-util for this method
-            - update the package tutorial if needed
-
-        .. code-block:: python 
-
-            usage code 
+            See class docstring
         """
         self.log.info('starting the ``refresh`` method')
 
