@@ -120,9 +120,11 @@ class orbfitPositions():
         while expsoureCount > 0:
             expsoureObjects, astorbString, expsoureCount = self._get_exposures_requiring_orbfit_positions(
                 batchSize=batchSize)
-            orbfitPositions = self._get_orbfit_positions(
-                expsoureObjects, astorbString)
-            self._add_orbfit_eph_to_database(orbfitPositions, expsoureObjects)
+            if expsoureCount:
+                orbfitPositions = self._get_orbfit_positions(
+                    expsoureObjects, astorbString)
+                self._add_orbfit_eph_to_database(
+                    orbfitPositions, expsoureObjects)
             if singleExposure:
                 expsoureCount = 0
 
@@ -166,7 +168,11 @@ class orbfitPositions():
         else:
             text = "%(batchSize)s exposure" % locals()
 
-        print "There are currently %(expsoureCount)s ATLAS exposures with pyephem positions needing tightened - processing the next %(text)s with orbfit" % locals()
+        if expsoureCount:
+            print "There are currently %(expsoureCount)s ATLAS exposures with pyephem positions needing tightened - processing the next %(text)s with orbfit" % locals()
+        else:
+            print "There are no more ATLAS exposures requiring to be processed with orbfit"
+            return {}, '', expsoureCount
 
         sqlQuery = u"""
             SELECT
