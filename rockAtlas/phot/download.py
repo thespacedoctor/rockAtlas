@@ -379,12 +379,13 @@ WHERE
         for m in oldMjds:
             for i in ["01a", "02a"]:
                 datapath = archivePath + "/%(i)s/%(m)s" % locals()
-                shutil.rmtree(datapath)
+                # shutil.rmtree(datapath)
                 try:
                     shutil.rmtree(datapath)
                 except:
                     self.log.warning(
                         "The path %(datapath)s does not exist - no need to delete" % locals())
+                    sys.exit(0)
 
         mjdString = (',').join(oldMjds)
 
