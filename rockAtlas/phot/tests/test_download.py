@@ -67,6 +67,15 @@ class test_download(unittest.TestCase):
         )
         results = this.get(days=1)
 
+    def test_remove_processed_data_function(self):
+
+        from rockAtlas.phot import download
+        this = download(
+            log=log,
+            settings=settings
+        )
+        results = this._remove_processed_data()
+
     def test_download_function_exception(self):
 
         from rockAtlas import download
