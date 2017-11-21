@@ -54,11 +54,13 @@ class download():
     def __init__(
             self,
             log,
-            settings=False
+            settings=False,
+            dev_flag=0
     ):
         self.log = log
         log.debug("instansiating a new 'download' object")
         self.settings = settings
+        self.dev_flag = dev_flag
 
         # xt-self-arg-tmpx
 
@@ -164,6 +166,11 @@ class download():
             print "%(days)s nights of ATLAS data already cached locally" % locals()
             return []
 
+        if self.dev_flag:
+            dev_flag = "and dev_flag = 1"
+        else:
+            dev_flag = ''
+
         # RETURN THE REMAINING NIGHT MJDS NEEDING DOWNLOADED
         remainingDownloadCount = int(days) - len(mjds)
         sqlQuery = u"""
@@ -172,8 +179,8 @@ class download():
             FROM
                 atlas_exposures
             WHERE
-                orbfit_positions = 1
-                    AND FLOOR(mjd) NOT IN (SELECT 
+                local_data = 0 and dophot_match = 0 %(dev_flag)s 
+                    AND FLOOR(mjd) NOT IN (SELECT
                         *
                     FROM
                         (SELECT DISTINCT
@@ -181,8 +188,9 @@ class download():
                         FROM
                             atlas_exposures
                         WHERE
-                            orbfit_positions != 1) AS a) order by mjdInt asc limit %(remainingDownloadCount)s;
+                            local_data = 1) AS a) order by mjdInt asc limit %(remainingDownloadCount)s;
         """ % locals()
+
         rows = readquery(
             log=self.log,
             sqlQuery=sqlQuery,
@@ -361,6 +369,9 @@ WHERE
             sqlQuery=sqlQuery,
             dbConn=self.atlasMoversDBConn
         )
+
+        if not len(mjds):
+            return None
 
         oldMjds = []
         oldMjds[:] = [str(int(o["mjd"])) for o in mjds]
