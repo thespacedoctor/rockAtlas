@@ -368,6 +368,7 @@ WHERE
         for m in oldMjds:
             for i in ["01a", "02a"]:
                 datapath = archivePath + "/%(i)s/%(m)s" % locals()
+                shutil.rmtree(datapath)
                 try:
                     shutil.rmtree(datapath)
                 except:
