@@ -376,7 +376,7 @@ WHERE
 
         mjdString = (',').join(oldMjds)
 
-        sqlQuery = """update  atlas_exposures set local_data = 0 where floor(mjd) in (%(mjdString)s) and dophot_match = 1""" % locals(
+        sqlQuery = """update  atlas_exposures set local_data = 0 where floor(mjd) in (%(mjdString)s) and dophot_match != 0""" % locals(
         )
         writequery(
             log=self.log,
