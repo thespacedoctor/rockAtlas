@@ -135,7 +135,8 @@ def main(arguments=None):
         from rockAtlas.phot import download
         data = download(
             log=log,
-            settings=settings
+            settings=settings,
+            dev_flag=True
         )
         data.get(days=days)
 

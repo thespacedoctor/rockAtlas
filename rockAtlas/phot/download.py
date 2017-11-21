@@ -55,7 +55,7 @@ class download():
             self,
             log,
             settings=False,
-            dev_flag=0
+            dev_flag=False
     ):
         self.log = log
         log.debug("instansiating a new 'download' object")
