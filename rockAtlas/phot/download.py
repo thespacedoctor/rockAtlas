@@ -23,8 +23,7 @@ from fundamentals.files import recursive_directory_listing
 from fundamentals.mysql import insert_list_of_dictionaries_into_database_tables
 import pymysql as ms
 from rockAtlas.bookkeeping import bookkeeper
-# OR YOU CAN REMOVE THE CLASS BELOW AND ADD A WORKER FUNCTION ... SNIPPET TRIGGER BELOW
-# xt-worker-def
+import shutil
 
 
 class download():
@@ -39,12 +38,7 @@ class download():
 
         To setup your logger, settings and database connections, please use the ``fundamentals`` package (`see tutorial here <http://fundamentals.readthedocs.io/en/latest/#tutorial>`_). 
 
-        To initiate a download object, use the following:
-
-        .. todo::
-
-            - create cl-util for this class
-            - add a tutorial about ``download`` to documentation
+        To initiate a download object, and download the next 5 days worth of ATLAS data from Hawaii use the following:
 
         .. code-block:: python 
 
@@ -53,7 +47,7 @@ class download():
                 log=log,
                 settings=settings
             )
-            data.get()   
+            data.get(days=5)   
     """
     # Initialisation
 
@@ -99,6 +93,8 @@ class download():
             See class docstring
         """
         self.log.info('starting the ``get`` method')
+
+        self._remove_processed_data()
 
         archivePath = self.settings["atlas archive path"]
         mjds = self._determine_mjds_to_download(days=days)
@@ -333,3 +329,63 @@ class download():
         thisConn.close()
 
         return str(int(mjd))
+
+    def _remove_processed_data(
+            self):
+        """*remove processed data*
+        """
+        self.log.info('starting the ``_remove_processed_data`` method')
+
+        archivePath = self.settings["atlas archive path"]
+
+        from fundamentals.mysql import readquery
+        sqlQuery = u"""
+            SELECT DISTINCT
+    FLOOR(mjd) as mjd
+FROM
+    atlas_exposures
+WHERE
+    local_data = 1 AND dophot_match > 0
+        AND FLOOR(mjd) NOT IN (SELECT 
+            *
+        FROM
+            (SELECT DISTINCT
+                FLOOR(mjd)
+            FROM
+                atlas_exposures
+            WHERE
+                local_data = 1 AND dophot_match = 0) AS a);
+        """ % locals()
+        mjds = readquery(
+            log=self.log,
+            sqlQuery=sqlQuery,
+            dbConn=self.atlasMoversDBConn
+        )
+
+        oldMjds = []
+        oldMjds[:] = [str(int(o["mjd"])) for o in mjds]
+
+        for m in oldMjds:
+            for i in ["01a", "02a"]:
+                datapath = archivePath + "/%(i)s/%(m)s" % locals()
+                try:
+                    shutil.rmtree(datapath)
+                except:
+                    self.log.warning(
+                        "The path %(datapath)s does not exist - no need to delete" % locals())
+
+        mjdString = (',').join(oldMjds)
+
+        sqlQuery = """update  atlas_exposures set local_data = 0 where floor(mjd) in (%(mjdString)s) and dophot_match = 1""" % locals(
+        )
+        writequery(
+            log=self.log,
+            sqlQuery=sqlQuery,
+            dbConn=self.atlasMoversDBConn
+        )
+
+        self.log.info('completed the ``_remove_processed_data`` method')
+        return None
+
+    # use the tab-trigger below for new method
+    # xt-class-method

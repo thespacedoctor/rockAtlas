@@ -26,6 +26,17 @@ or to do a full update (e.g. if the command has not been run in a long time) run
     
     rockAtlas bookkeeping --full
 
+Downloading a Cache of ATLAS data
+---------------------------------
+
+To download a cache of ATLAS dophot and meta files to work on locally, run ``rockAtlas cache <days>``. So to download 5 days of data:
+
+.. code-block:: bash 
+    
+    rockAtlas cache 5
+
+The rockAtlas code checks on what the earliest data there is that still requires the dophot files to be read and parsed. Data is download from this day forward. If there is data in the local cache that has already been processed then this data is removed from the cache to create space for new data.
+
 Orbital Elements Cache
 ----------------------
 
@@ -72,6 +83,17 @@ To only generate orbfit positions for a single ATLAS exposure run the command wi
 .. code-block:: bash 
     
     rockAtlas orbfit --one
+
+dophot Matching
+---------------
+
+To parse the local dophot files that have orbfit estimated known asteriod positions generated, run the command:
+
+.. code-block:: bash 
+    
+    rockAtlas dophot
+
+This will open the dophot files and crossmatch the reported dections with the positions estimated by orbfit. Use the "dophot search radius" parameter in the settings file to adjust the crossmatch tolerance. All matches (often multiple matches for a single orbfit estimated position in crowded fields) are recorded in the ``dophot_matches`` database table.
 
 
 

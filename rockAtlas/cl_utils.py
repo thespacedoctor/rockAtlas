@@ -10,6 +10,7 @@ Usage:
     rockAtlas pyephem [-o]
     rockAtlas orbfit [-o]
     rockAtlas cache <days>
+    rockAtlas dophot
 
 Commands:
     bookkeeping           update and clean database tables, perform essential bookkeeping tasks
@@ -17,6 +18,7 @@ Commands:
     pyephem               generate the pyephem positions overlapping the ATLAS exposures in the moving objects database
     orbfit                generate the orbfit positions overlapping the ATLAS exposures in the moving objects database
     cache                 download a cache of ATLAS dophot data to chew on (cache limit set in settings file)
+    dophot                match the orbfit generated positions against the dophot recorded postions (for locally cached files)
 
 Options:
     init                  setup the rockAtlas settings file for the first time
@@ -136,6 +138,14 @@ def main(arguments=None):
             settings=settings
         )
         data.get(days=days)
+
+    if dophot:
+        from rockAtlas.phot import dophotMatch
+        dp = dophotMatch(
+            log=log,
+            settings=settings
+        )
+        dp.get()
 
     if "dbConn" in locals() and dbConn:
         dbConn.commit()

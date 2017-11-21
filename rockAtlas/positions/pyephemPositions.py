@@ -248,10 +248,10 @@ class pyephemPositions():
 
         sqlQuery = """update
             atlas_exposures
-        set orbfit_positions = 1
+        set orbfit_positions = 1, dophot_match = 1
         WHERE
             pyephem_positions = 1
-                AND orbfit_positions = 0 and expname not in (select distinct expname from pyephem_positions);""" % locals(
+                AND (orbfit_positions = 0 or dophot_match = 0) and expname not in (select distinct expname from pyephem_positions);""" % locals(
         )
         writequery(
             log=self.log,

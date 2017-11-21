@@ -81,10 +81,10 @@ class orbfitPositions():
 
         sqlQuery = """update
             atlas_exposures
-        set orbfit_positions = 1
+        set orbfit_positions = 1, dophot_match = 1
         WHERE
             pyephem_positions = 1
-                AND orbfit_positions = 0 and expname not in (select distinct expname from pyephem_positions);""" % locals(
+                AND (orbfit_positions = 0 or dophot_match = 0) and expname not in (select distinct expname from pyephem_positions);""" % locals(
         )
         writequery(
             log=self.log,
@@ -170,7 +170,7 @@ class orbfitPositions():
 
         sqlQuery = u"""
             SELECT
-                a.expname, a.mjd, a.raDeg, a.decDeg, p.object_name, p.mpc_number, o.astorb_string, a.mjd+a.exp_time/(2*3600*24) as `mjd_mid`
+                a.expname, a.mjd, o.primaryId, a.raDeg, a.decDeg, p.object_name, p.mpc_number, o.astorb_string, a.mjd+a.exp_time/(2*3600*24) as `mjd_mid`
             FROM
                 atlas_exposures a,
                 pyephem_positions p,
@@ -209,11 +209,11 @@ class orbfitPositions():
                     "ra": o["raDeg"],
                     "dec": o["decDeg"],
                     "mjd": o["mjd_mid"],
-                    "objects": [[o["mpc_number"], o["object_name"]]]
+                    "objects": [[o["mpc_number"], o["object_name"], o["primaryId"]]]
                 }
             else:
                 expsoureObjects[o["expname"]]["objects"].append(
-                    [o["mpc_number"], o["object_name"]])
+                    [o["mpc_number"], o["object_name"], o["primaryId"]])
 
             if o["object_name"] not in astorbDict:
                 astorbDict[o["object_name"]] = o["astorb_string"]
@@ -264,9 +264,9 @@ class orbfitPositions():
             for o in v["objects"]:
 
                 if o[0]:
-                    objects[o[0]] = [o[0], o[1]]
+                    objects[o[0]] = [o[0], o[1], o[2]]
                 else:
-                    objects[o[1].replace(" ", "")] = [o[0], o[1]]
+                    objects[o[1].replace(" ", "")] = [o[0], o[1], o[2]]
 
             if expname[:2] == "02":
                 obscode = "T05"
@@ -286,6 +286,8 @@ class orbfitPositions():
             for o in orbfitEph:
                 o["expname"] = expname
                 o["mpc_number"] = objects[o["object_name"]][0]
+                o["orbital_elements_id"] = objects[o["object_name"]][
+                    2]
                 o["object_name"] = objects[o["object_name"]][
                     1]
 
