@@ -153,7 +153,7 @@ class pyephemPositions():
             dev_flag = ""
 
         sqlQuery = u"""
-            select distinct pyephem_mjd from atlas_exposures where pyephem_positions = 0  %(dev_flag)s order by pyephem_mjd asc
+            select distinct pyephem_mjd from atlas_exposures where pyephem_positions = 0 and local_data = 1 %(dev_flag)s order by pyephem_mjd asc
         """ % locals()
         rows = readquery(
             log=self.log,
@@ -251,7 +251,7 @@ class pyephemPositions():
         set orbfit_positions = 1, dophot_match = 1
         WHERE
             pyephem_positions = 1
-                AND (orbfit_positions = 0 or dophot_match = 0) and expname not in (select distinct expname from pyephem_positions);""" % locals(
+                AND (orbfit_positions = 0 or dophot_match = 0) and local_data = 1 and expname not in (select distinct expname from pyephem_positions);""" % locals(
         )
         writequery(
             log=self.log,
