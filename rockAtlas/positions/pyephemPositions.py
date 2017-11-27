@@ -211,7 +211,7 @@ class pyephemPositions():
             dbTableName="pyephem_positions",
             uniqueKeyList=["expname", "object_name"],
             dateModified=True,
-            batchSize=2500,
+            batchSize=10000,
             replace=True
         )
 

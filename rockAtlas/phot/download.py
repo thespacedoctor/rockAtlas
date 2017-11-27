@@ -322,7 +322,7 @@ class download():
             dictList=allData,
             dbTableName="atlas_exposures",
             dateModified=True,
-            batchSize=2500,
+            batchSize=10000,
             replace=True
         )
 

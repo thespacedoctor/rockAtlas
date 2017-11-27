@@ -314,7 +314,7 @@ class dophotMatch():
             dbTableName="dophot_photometry",
             uniqueKeyList=["expname", "idx"],
             dateModified=True,
-            batchSize=2500,
+            batchSize=10000,
             replace=True
         )
 
