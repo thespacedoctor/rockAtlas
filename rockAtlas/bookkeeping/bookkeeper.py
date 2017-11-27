@@ -170,7 +170,7 @@ class bookkeeper():
                 dbTableName="atlas_exposures",
                 uniqueKeyList=["expname"],
                 dateModified=False,
-                batchSize=2500,
+                batchSize=10000,
                 replace=True
             )
 
@@ -207,7 +207,7 @@ class bookkeeper():
                 dbTableName="atlas_exposures",
                 uniqueKeyList=["expname"],
                 dateModified=False,
-                batchSize=2500,
+                batchSize=10000,
                 replace=True
             )
 
