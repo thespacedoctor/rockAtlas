@@ -95,7 +95,7 @@ class orbfitPositions():
         return None
 
     def get(self,
-            singleExposure):
+            singleExposure=False):
         """
         *get the orbfitPositions object*
 
