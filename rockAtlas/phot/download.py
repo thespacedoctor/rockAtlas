@@ -24,6 +24,137 @@ from fundamentals.mysql import insert_list_of_dictionaries_into_database_tables
 import pymysql as ms
 from rockAtlas.bookkeeping import bookkeeper
 import shutil
+from astrocalc.times import now
+import math
+from astrocalc.times import conversions
+
+
+atlasMoversDBConn = False
+
+
+def _download_one_night_of_atlas_data(
+        mjd,
+        log,
+        archivePath):
+    """*summary of function*
+
+    **Key Arguments:**
+        - ``mjd`` -- the mjd of the night of data to download
+        - ``archivePath`` -- the path to the root of the local archive         
+    """
+
+    # SETUP A DATABASE CONNECTION FOR THE remote database
+    global atlasMoversDBConn
+
+    cmd = "rsync -avzL --include='*.dph' --include='*.meta' --include='*/' --exclude='*' dyoung@atlas-base-adm01.ifa.hawaii.edu:/atlas/red/02a/%(mjd)s %(archivePath)s/02a/" % locals(
+    )
+
+    p = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True)
+    stdout, stderr = p.communicate()
+    if len(stderr):
+        print 'error in rsyncing MJD %(mjd)s data: %(stderr)s' % locals()
+        return None
+
+    cmd = "rsync -avzL --include='*.dph' --include='*.meta' --include='*/' --exclude='*' dyoung@atlas-base-adm01.ifa.hawaii.edu:/atlas/red/01a/%(mjd)s %(archivePath)s/01a/" % locals(
+    )
+    p = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True)
+    stdout, stderr = p.communicate()
+    if len(stderr):
+        print 'error in rsyncing MJD %(mjd)s data: %(stderr)s' % locals()
+        return None
+
+    theseFiles = recursive_directory_listing(
+        log=log,
+        baseFolderPath="%(archivePath)s/02a/%(mjd)s" % locals(),
+        whatToList="files"  # all | files | dirs
+    )
+    theseFiles += recursive_directory_listing(
+        log=log,
+        baseFolderPath="%(archivePath)s/01a/%(mjd)s" % locals(),
+        whatToList="files"  # all | files | dirs
+    )
+
+    metaFilenames = []
+    metaFilenames[:] = [(os.path.splitext(os.path.basename(m))[
+        0], m) for m in theseFiles if "meta" in m]
+
+    metaDict = {}
+    for m in metaFilenames:
+        metaDict[m[0]] = m[1]
+
+    sqlQuery = u"""
+            select expname from atlas_exposures where floor(mjd) = %(mjd)s 
+        """ % locals()
+    rows = readquery(
+        log=log,
+        sqlQuery=sqlQuery,
+        dbConn=atlasMoversDBConn
+    )
+
+    dbExps = []
+    dbExps[:] = [r["expname"]for r in rows]
+
+    missingMeta = []
+    missingMeta[:] = [m for m in metaDict.keys() if m not in dbExps]
+
+    fitskw = {
+        "MJD-OBS": "mjd",
+        "OBJECT": "atlas_object_id",
+        "RA": "raDeg",
+        "DEC": "decDeg",
+        "FILTER": "filter",
+        "EXPTIME": "exp_time",
+        "OBSNAME": "expname"
+    }
+
+    allData = []
+    for m in missingMeta:
+
+        pathToReadFile = metaDict[m]
+        try:
+            log.debug("attempting to open the file %s" %
+                      (pathToReadFile,))
+            readFile = codecs.open(
+                pathToReadFile, encoding='utf-8', mode='r')
+            thisData = readFile.read()
+            readFile.close()
+        except IOError, e:
+            message = 'could not open the file %s' % (pathToReadFile,)
+            log.critical(message)
+            raise IOError(message)
+
+        fitsDict = {}
+        for l in thisData.split("\n"):
+            kw = l.split("=")[0].strip()
+            if kw in fitskw.keys() and kw not in fitsDict.keys():
+                fitsDict[fitskw[kw]] = l.split(
+                    "=")[1].split("/")[0].strip().replace("'", "")
+
+        if len(fitsDict) == 7:
+            allData.append(fitsDict)
+
+    if len(allData):
+        insert_list_of_dictionaries_into_database_tables(
+            dbConn=atlasMoversDBConn,
+            log=log,
+            dictList=allData,
+            dbTableName="atlas_exposures",
+            dateModified=True,
+            batchSize=10000,
+            replace=True
+        )
+
+    sqlQuery = """
+update atlas_exposures set dev_flag = 1 where dev_flag = 0 and floor(mjd) in (select mjd from day_tracker where dev_flag = 1);
+update day_tracker set processed = 1, local_data = 1 where mjd = %(mjd)s;""" % locals(
+    )
+    writequery(
+        log=log,
+        sqlQuery=sqlQuery,
+        dbConn=atlasMoversDBConn
+    )
+
+    return str(int(mjd))
 
 
 class download():
@@ -62,6 +193,8 @@ class download():
         self.settings = settings
         self.dev_flag = dev_flag
 
+        global atlasMoversDBConn
+
         # xt-self-arg-tmpx
 
         # INITIAL ACTIONS
@@ -75,6 +208,7 @@ class download():
         self.atlas3DbConn = dbConns["atlas3"]
         self.atlas4DbConn = dbConns["atlas4"]
         self.atlasMoversDBConn = dbConns["atlasMovers"]
+        atlasMoversDBConn = dbConns["atlasMovers"]
 
         return None
 
@@ -99,6 +233,7 @@ class download():
         self._remove_processed_data()
 
         archivePath = self.settings["atlas archive path"]
+        self._update_day_tracker_table()
         mjds = self._determine_mjds_to_download(days=days)
 
         if len(mjds) == 0:
@@ -107,7 +242,7 @@ class download():
         dbConn = self.atlasMoversDBConn
 
         # DOWNLOAD THE DATA IN PARALLEL
-        results = fmultiprocess(log=self.log, function=self._download_one_night_of_atlas_data,
+        results = fmultiprocess(log=self.log, function=_download_one_night_of_atlas_data,
                                 inputArray=mjds, archivePath=archivePath)
 
         # UPDATE BOOKKEEPING
@@ -174,13 +309,20 @@ class download():
         # RETURN THE REMAINING NIGHT MJDS NEEDING DOWNLOADED
         remainingDownloadCount = int(days) - len(mjds)
         sqlQuery = u"""
-            SELECT DISTINCT
+            SELECT DISTINCT mjdInt from (
+(SELECT DISTINCT
                 FLOOR(mjd) AS mjdInt
             FROM
                 atlas_exposures
             WHERE
-                local_data = 0 and dophot_match = 0 %(dev_flag)s 
-                    AND FLOOR(mjd) NOT IN (SELECT
+                local_data = 0 and dophot_match = 0 %(dev_flag)s
+UNION ALL
+SELECT DISTINCT
+                FLOOR(mjd) AS mjdInt
+            FROM
+                day_tracker
+            WHERE
+                processed = 0 %(dev_flag)s) as a) where mjdInt not in (SELECT
                         *
                     FROM
                         (SELECT DISTINCT
@@ -204,140 +346,6 @@ class download():
         self.log.info('completed the ``_determine_mjds_to_download`` method')
         return mjds
 
-    def _download_one_night_of_atlas_data(
-            self,
-            mjd,
-            archivePath):
-        """*summary of function*
-
-        **Key Arguments:**
-            - ``mjd`` -- the mjd of the night of data to download
-            - ``archivePath`` -- the path to the root of the local archive
-            - ``dbConn`` -- connector for the atlas movers database            
-        """
-
-        # SETUP A DATABASE CONNECTION FOR THE remote database
-        host = self.settings["database settings"]["atlasMovers"]["host"]
-        user = self.settings["database settings"]["atlasMovers"]["user"]
-        passwd = self.settings["database settings"]["atlasMovers"]["password"]
-        dbName = self.settings["database settings"]["atlasMovers"]["db"]
-        try:
-            sshPort = self.settings["database settings"][
-                "atlasMovers"]["tunnel"]["port"]
-        except:
-            sshPort = False
-        thisConn = ms.connect(
-            host=host,
-            user=user,
-            passwd=passwd,
-            db=dbName,
-            port=sshPort,
-            use_unicode=True,
-            charset='utf8'
-        )
-        thisConn.autocommit(True)
-
-        cmd = "rsync -avzL --include='*.dph' --include='*.meta' --include='*/' --exclude='*' dyoung@atlas-base-adm01.ifa.hawaii.edu:/atlas/red/02a/%(mjd)s %(archivePath)s/02a/" % locals(
-        )
-
-        p = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True)
-        stdout, stderr = p.communicate()
-        if len(stderr):
-            print 'error in rsyncing MJD %(mjd)s data: %(stderr)s' % locals()
-            return None
-
-        cmd = "rsync -avzL --include='*.dph' --include='*.meta' --include='*/' --exclude='*' dyoung@atlas-base-adm01.ifa.hawaii.edu:/atlas/red/01a/%(mjd)s %(archivePath)s/01a/" % locals(
-        )
-        p = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True)
-        stdout, stderr = p.communicate()
-        if len(stderr):
-            print 'error in rsyncing MJD %(mjd)s data: %(stderr)s' % locals()
-            return None
-
-        theseFiles = recursive_directory_listing(
-            log=self.log,
-            baseFolderPath="%(archivePath)s/02a/%(mjd)s" % locals(),
-            whatToList="files"  # all | files | dirs
-        )
-        theseFiles += recursive_directory_listing(
-            log=self.log,
-            baseFolderPath="%(archivePath)s/01a/%(mjd)s" % locals(),
-            whatToList="files"  # all | files | dirs
-        )
-
-        metaFilenames = []
-        metaFilenames[:] = [(os.path.splitext(os.path.basename(m))[
-            0], m) for m in theseFiles if "meta" in m]
-
-        metaDict = {}
-        for m in metaFilenames:
-            metaDict[m[0]] = m[1]
-
-        sqlQuery = u"""
-            select expname from atlas_exposures where floor(mjd) = %(mjd)s 
-        """ % locals()
-        rows = readquery(
-            log=self.log,
-            sqlQuery=sqlQuery,
-            dbConn=thisConn
-        )
-
-        dbExps = []
-        dbExps[:] = [r["expname"]for r in rows]
-
-        missingMeta = []
-        missingMeta[:] = [m for m in metaDict.keys() if m not in dbExps]
-
-        fitskw = {
-            "MJD-OBS": "mjd",
-            "OBJECT": "atlas_object_id",
-            "RA": "raDeg",
-            "DEC": "decDeg",
-            "FILTER": "filter",
-            "EXPTIME": "exp_time",
-            "OBSNAME": "expname"
-        }
-
-        allData = []
-        for m in missingMeta:
-
-            pathToReadFile = metaDict[m]
-            try:
-                self.log.debug("attempting to open the file %s" %
-                               (pathToReadFile,))
-                readFile = codecs.open(
-                    pathToReadFile, encoding='utf-8', mode='r')
-                thisData = readFile.read()
-                readFile.close()
-            except IOError, e:
-                message = 'could not open the file %s' % (pathToReadFile,)
-                self.log.critical(message)
-                raise IOError(message)
-
-            fitsDict = {}
-            for l in thisData.split("\n"):
-                kw = l.split("=")[0].strip()
-                if kw in fitskw.keys() and kw not in fitsDict.keys():
-                    fitsDict[fitskw[kw]] = l.split(
-                        "=")[1].split("/")[0].strip().replace("'", "")
-
-            if len(fitsDict) == 7:
-                allData.append(fitsDict)
-
-        insert_list_of_dictionaries_into_database_tables(
-            dbConn=thisConn,
-            log=self.log,
-            dictList=allData,
-            dbTableName="atlas_exposures",
-            dateModified=True,
-            batchSize=10000,
-            replace=True
-        )
-
-        thisConn.close()
-
-        return str(int(mjd))
-
     def _remove_processed_data(
             self):
         """*remove processed data*
@@ -348,13 +356,20 @@ class download():
 
         from fundamentals.mysql import readquery
         sqlQuery = u"""
-            SELECT DISTINCT
+            select mjd from (SELECT DISTINCT
     FLOOR(mjd) as mjd
 FROM
     atlas_exposures
 WHERE
     local_data = 1 AND dophot_match > 0
-        AND FLOOR(mjd) NOT IN (SELECT 
+UNION ALL
+SELECT DISTINCT
+    FLOOR(mjd) as mjd
+FROM
+    day_tracker
+WHERE
+    local_data = 1) as a
+        where mjd NOT IN (SELECT 
             *
         FROM
             (SELECT DISTINCT
@@ -389,7 +404,9 @@ WHERE
 
         mjdString = (',').join(oldMjds)
 
-        sqlQuery = """update  atlas_exposures set local_data = 0 where floor(mjd) in (%(mjdString)s) and dophot_match != 0""" % locals(
+        sqlQuery = """
+update day_tracker set local_data = 0 where floor(mjd) in (%(mjdString)s);
+update  atlas_exposures set local_data = 0 where floor(mjd) in (%(mjdString)s) and dophot_match != 0;""" % locals(
         )
         writequery(
             log=self.log,
@@ -398,6 +415,80 @@ WHERE
         )
 
         self.log.info('completed the ``_remove_processed_data`` method')
+        return None
+
+    def _update_day_tracker_table(
+            self):
+        """* update day tracker table*
+
+        **Key Arguments:**
+            # -
+
+        **Return:**
+            - None
+
+        **Usage:**
+            ..  todo::
+
+                - add usage info
+                - create a sublime snippet for usage
+                - write a command-line tool for this method
+                - update package tutorial with command-line tool info if needed
+
+            .. code-block:: python 
+
+                usage code 
+
+        """
+        self.log.info('starting the ``_update_day_tracker_table`` method')
+
+        # YESTERDAY MJD
+        mjd = now(
+            log=self.log
+        ).get_mjd()
+        yesterday = int(math.floor(mjd - 1))
+
+        sqlQuery = u"""
+            SELECT mjd FROM atlas_moving_objects.day_tracker order by mjd desc limit 1
+        """ % locals()
+        rows = readquery(
+            log=self.log,
+            sqlQuery=sqlQuery,
+            dbConn=self.atlasMoversDBConn,
+        )
+        highestMjd = int(rows[0]["mjd"])
+
+        converter = conversions(
+            log=self.log
+        )
+
+        sqlData = []
+        for m in range(highestMjd, yesterday):
+            # CONVERTER TO CONVERT MJD TO DATE
+            utDate = converter.mjd_to_ut_datetime(
+                mjd=m,
+                sqlDate=True,
+                datetimeObject=False
+            )
+            sqlData.append({
+                "mjd": m,
+                "ut_date": utDate
+            })
+
+        insert_list_of_dictionaries_into_database_tables(
+            dbConn=self.atlasMoversDBConn,
+            log=self.log,
+            dictList=sqlData,
+            dbTableName="day_tracker",
+            uniqueKeyList=["mjd"],
+            dateModified=False,
+            batchSize=10000,
+            replace=True
+        )
+
+        self.atlasMoversDBConn.commit()
+
+        self.log.info('completed the ``_update_day_tracker_table`` method')
         return None
 
     # use the tab-trigger below for new method

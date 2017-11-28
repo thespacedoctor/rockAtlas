@@ -11,6 +11,7 @@ Usage:
     rockAtlas orbfit [-o]
     rockAtlas cache <days>
     rockAtlas dophot
+    rockAtlas cycle <days>
 
 Commands:
     bookkeeping           update and clean database tables, perform essential bookkeeping tasks
@@ -19,6 +20,8 @@ Commands:
     orbfit                generate the orbfit positions overlapping the ATLAS exposures in the moving objects database
     cache                 download a cache of ATLAS dophot data to chew on (cache limit set in settings file)
     dophot                match the orbfit generated positions against the dophot recorded postions (for locally cached files)
+    cycle                 cycle through the moving objects database, downloading a few nights data, generate pyephem positions, generate orbfit positions, match dophots file ... and repeat
+
 
 Options:
     init                  setup the rockAtlas settings file for the first time
@@ -142,6 +145,39 @@ def main(arguments=None):
 
     if dophot:
         from rockAtlas.phot import dophotMatch
+        dp = dophotMatch(
+            log=log,
+            settings=settings
+        )
+        dp.get()
+
+    if cycle:
+        from rockAtlas.phot import download
+        from rockAtlas.positions import pyephemPositions
+        from rockAtlas.positions import orbfitPositions
+        from rockAtlas.phot import dophotMatch
+
+        data = download(
+            log=log,
+            settings=settings,
+            dev_flag=True
+        )
+        data.get(days=days)
+
+        pyeph = pyephemPositions(
+            log=log,
+            settings=settings,
+            dev_flag=True
+        )
+        pyeph.get()
+
+        oe = orbfitPositions(
+            log=log,
+            settings=settings,
+            dev_flag=True
+        )
+        oe.get()
+
         dp = dophotMatch(
             log=log,
             settings=settings

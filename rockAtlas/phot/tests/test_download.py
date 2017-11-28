@@ -47,6 +47,15 @@ if not os.path.exists(pathToOutputDir):
 
 class test_download(unittest.TestCase):
 
+    def test_update_day_tracker_function(self):
+
+        from rockAtlas.phot import download
+        this = download(
+            log=log,
+            settings=settings
+        )
+        results = this._update_day_tracker_table()
+
     def test_mjds_to_download(self):
 
         from rockAtlas.phot import download
