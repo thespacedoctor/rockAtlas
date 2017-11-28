@@ -88,7 +88,7 @@ class pyephemPositions():
 
         return None
 
-    def get(self, singleSnapshot):
+    def get(self, singleSnapshot=False):
         """
         *geneate the pyephem positions*
 
