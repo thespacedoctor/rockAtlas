@@ -157,32 +157,36 @@ def main(arguments=None):
         from rockAtlas.positions import orbfitPositions
         from rockAtlas.phot import dophotMatch
 
-        data = download(
-            log=log,
-            settings=settings,
-            dev_flag=True
-        )
-        data.get(days=days)
+        i = 0
+        while i < 100:
 
-        pyeph = pyephemPositions(
-            log=log,
-            settings=settings,
-            dev_flag=True
-        )
-        pyeph.get()
+            data = download(
+                log=log,
+                settings=settings,
+                dev_flag=True
+            )
+            data.get(days=days)
 
-        oe = orbfitPositions(
-            log=log,
-            settings=settings,
-            dev_flag=True
-        )
-        oe.get()
+            pyeph = pyephemPositions(
+                log=log,
+                settings=settings,
+                dev_flag=True
+            )
+            pyeph.get()
 
-        dp = dophotMatch(
-            log=log,
-            settings=settings
-        )
-        dp.get()
+            oe = orbfitPositions(
+                log=log,
+                settings=settings,
+                dev_flag=True
+            )
+            oe.get()
+
+            dp = dophotMatch(
+                log=log,
+                settings=settings
+            )
+            dp.get()
+            i += 1
 
     if "dbConn" in locals() and dbConn:
         dbConn.commit()
