@@ -145,8 +145,7 @@ def _download_one_night_of_atlas_data(
         )
 
     sqlQuery = """
-update atlas_exposures set dev_flag = 1 where dev_flag = 0 and floor(mjd) in (select mjd from day_tracker where dev_flag = 1);
-update day_tracker set processed = 1, local_data = 1 where mjd = %(mjd)s;""" % locals(
+update atlas_exposures set dev_flag = 1 where dev_flag = 0 and floor(mjd) in (select mjd from day_tracker where dev_flag = 1);""" % locals(
     )
     writequery(
         log=log,
@@ -250,7 +249,8 @@ class download():
         mjds[:] = [r for r in results if r is not None]
         mjds = (',').join(mjds)
 
-        sqlQuery = """update atlas_exposures set local_data = 1 where floor(mjd) in (%(mjds)s)""" % locals(
+        sqlQuery = """update atlas_exposures set local_data = 1 where floor(mjd) in (%(mjds)s);
+    update day_tracker set processed = 1 where mjd in (%(mjds)s);""" % locals(
         )
         writequery(
             log=self.log,
@@ -368,7 +368,7 @@ SELECT DISTINCT
 FROM
     day_tracker
 WHERE
-    local_data = 1) as a
+    processed = 1) as a
         where mjd NOT IN (SELECT 
             *
         FROM
