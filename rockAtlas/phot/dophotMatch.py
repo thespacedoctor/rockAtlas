@@ -319,6 +319,18 @@ class dophotMatch():
             dbConn=self.atlasMoversDBConn
         )
 
+        sqlQuery = """update
+            atlas_exposures
+        set dophot_match = 2
+        WHERE
+             dophot_match = 1 and local_data = 1 and expname not in (select distinct expname from dophot_match);""" % locals(
+        )
+        writequery(
+            log=self.log,
+            sqlQuery=sqlQuery,
+            dbConn=self.atlasMoversDBConn,
+        )
+
         self.log.info(
             'completed the ``_add_dophot_matches_to_database`` method')
         return None

@@ -79,19 +79,6 @@ class orbfitPositions():
         self.atlas4DbConn = dbConns["atlas4"]
         self.atlasMoversDBConn = dbConns["atlasMovers"]
 
-        sqlQuery = """update
-            atlas_exposures
-        set orbfit_positions = 1, dophot_match = 1
-        WHERE
-            pyephem_positions = 1
-                AND (orbfit_positions = 0 or dophot_match = 0) and local_data = 1 and expname not in (select distinct expname from pyephem_positions);""" % locals(
-        )
-        writequery(
-            log=self.log,
-            sqlQuery=sqlQuery,
-            dbConn=self.atlasMoversDBConn,
-        )
-
         return None
 
     def get(self,
@@ -432,6 +419,19 @@ class orbfitPositions():
         exposures = '","'.join(exposures)
 
         sqlQuery = """update atlas_exposures set  orbfit_positions = 1 where expname in ("%(exposures)s")""" % locals(
+        )
+        writequery(
+            log=self.log,
+            sqlQuery=sqlQuery,
+            dbConn=self.atlasMoversDBConn,
+        )
+
+        sqlQuery = """update
+            atlas_exposures
+        set orbfit_positions = 2, dophot_match = 2
+        WHERE
+            orbfit_positions = 1
+                AND (dophot_match = 0) and local_data = 1 and expname not in (select distinct expname from orbfit_positions);""" % locals(
         )
         writequery(
             log=self.log,
