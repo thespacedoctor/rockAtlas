@@ -24,9 +24,6 @@ from fundamentals.mysql import insert_list_of_dictionaries_into_database_tables
 from rockAtlas.bookkeeping import bookkeeper
 
 
-atlasMoversDBConn = False
-
-
 class dophotMatch():
     """
     *The worker class for the dophotMatch module*
@@ -58,9 +55,6 @@ class dophotMatch():
             settings=False,
 
     ):
-
-        global atlasMoversDBConn
-
         self.log = log
         log.debug("instansiating a new 'dophotMatch' object")
         self.settings = settings
@@ -77,7 +71,6 @@ class dophotMatch():
         self.atlas3DbConn = dbConns["atlas3"]
         self.atlas4DbConn = dbConns["atlas4"]
         self.atlasMoversDBConn = dbConns["atlasMovers"]
-        atlasMoversDBConn = dbConns["atlasMovers"]
 
         return None
 
@@ -162,7 +155,26 @@ class dophotMatch():
         """
         self.log.info('starting the ``_extract_phot_from_exposure`` method')
 
-        global atlasMoversDBConn
+        # SETUP A DATABASE CONNECTION FOR THE remote database
+        host = self.settings["database settings"]["atlasMovers"]["host"]
+        user = self.settings["database settings"]["atlasMovers"]["user"]
+        passwd = self.settings["database settings"]["atlasMovers"]["password"]
+        dbName = self.settings["database settings"]["atlasMovers"]["db"]
+        try:
+            sshPort = self.settings["database settings"][
+                "atlasMovers"]["tunnel"]["port"]
+        except:
+            sshPort = False
+        thisConn = ms.connect(
+            host=host,
+            user=user,
+            passwd=passwd,
+            db=dbName,
+            port=sshPort,
+            use_unicode=True,
+            charset='utf8'
+        )
+        thisConn.autocommit(True)
 
         matchRadius = float(self.settings["dophot search radius"])
 
@@ -179,7 +191,7 @@ class dophotMatch():
             writequery(
                 log=self.log,
                 sqlQuery=sqlQuery,
-                dbConn=atlasMoversDBConn,
+                dbConn=thisConn,
             )
             self.log.error(
                 'the dophot file %(expId)s.dph is missing from the local ATLAS data cache' % locals())
@@ -215,7 +227,7 @@ class dophotMatch():
         orbFitRows = readquery(
             log=self.log,
             sqlQuery=sqlQuery,
-            dbConn=atlasMoversDBConn,
+            dbConn=thisConn,
         )
 
         potSources = len(orbFitRows)
