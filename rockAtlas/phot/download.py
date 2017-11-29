@@ -361,14 +361,7 @@ SELECT DISTINCT
 FROM
     atlas_exposures
 WHERE
-    local_data = 1 AND dophot_match > 0
-UNION ALL
-SELECT DISTINCT
-    FLOOR(mjd) as mjd
-FROM
-    day_tracker
-WHERE
-    processed = 1) as a
+    local_data = 1 AND dophot_match > 0) as a
         where mjd NOT IN (SELECT 
             *
         FROM
@@ -407,6 +400,7 @@ WHERE
 update day_tracker set local_data = 0 where floor(mjd) in (%(mjdString)s);
 update  atlas_exposures set local_data = 0 where floor(mjd) in (%(mjdString)s) and dophot_match != 0;""" % locals(
         )
+        print sqlQuery
         writequery(
             log=self.log,
             sqlQuery=sqlQuery,

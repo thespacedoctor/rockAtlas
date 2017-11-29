@@ -25,7 +25,6 @@ from rockAtlas.bookkeeping import bookkeeper
 
 
 atlasMoversDBConn = False
-matchRadius = False
 
 
 class dophotMatch():
@@ -61,7 +60,6 @@ class dophotMatch():
     ):
 
         global atlasMoversDBConn
-        global matchRadius
 
         self.log = log
         log.debug("instansiating a new 'dophotMatch' object")
@@ -80,8 +78,6 @@ class dophotMatch():
         self.atlas4DbConn = dbConns["atlas4"]
         self.atlasMoversDBConn = dbConns["atlasMovers"]
         atlasMoversDBConn = dbConns["atlasMovers"]
-
-        matchRadius = float(self.settings["dophot search radius"])
 
         return None
 
@@ -107,7 +103,7 @@ class dophotMatch():
             print "%(remaining)s locally cached dophot files remain needing to be parsed for orbfit predicted known asteroid positions" % locals()
             if remaining == 0:
                 continue
-            dophotMatches = fmultiprocess(log=self.log, function=_extract_phot_from_exposure,
+            dophotMatches = fmultiprocess(log=self.log, function=self._extract_phot_from_exposure,
                                           inputArray=exposureIds, cachePath=cachePath)
             self._add_dophot_matches_to_database(
                 dophotMatches=dophotMatches, exposureIds=exposureIds)
@@ -151,6 +147,134 @@ class dophotMatch():
             'completed the ``_select_exposures_requiring_dophot_extraction`` method')
         return expnames, remaining
 
+    def _extract_phot_from_exposure(
+            self,
+            expId,
+            cachePath):
+        """* extract phot from exposure*
+
+        **Key Arguments:**
+            - ``expId`` -- the exposure to extract the dophot photometry from. A tuple of expId and integer MJD
+            - ``cachePath`` -- path to the cache of ATLAS data
+
+        **Return:**
+            - ``dophotRows`` -- the list of matched dophot rows
+        """
+        self.log.info('starting the ``_extract_phot_from_exposure`` method')
+
+        global atlasMoversDBConn
+
+        matchRadius = float(self.settings["dophot search radius"])
+
+        dophotFilePath = cachePath + "/" + \
+            expId[0][:3] + "/" + str(expId[1]) + "/" + expId[0] + ".dph"
+
+        # TEST THE FILE EXISTS
+        exists = os.path.exists(dophotFilePath)
+        expId = expId[0]
+        if not exists:
+
+            sqlQuery = """update atlas_exposures set dophot_match = 99 where expname = "%(expId)s" """ % locals(
+            )
+            writequery(
+                log=self.log,
+                sqlQuery=sqlQuery,
+                dbConn=atlasMoversDBConn,
+            )
+            self.log.error(
+                'the dophot file %(expId)s.dph is missing from the local ATLAS data cache' % locals())
+            return []
+
+        try:
+            self.log.debug("attempting to open the file %s" %
+                           (dophotFilePath,))
+            dophotFile = codecs.open(
+                dophotFilePath, encoding='utf-8', mode='r')
+            dophotData = dophotFile.read()
+            dophotFile.close()
+        except IOError, e:
+            message = 'could not open the file %s' % (dophotFilePath,)
+            self.log.critical(message)
+            raise IOError(message)
+
+        ra = []
+        dec = []
+        dophotLines = dophotData.split("\n")[1:]
+        for r in dophotLines:
+            r = r.split()
+            if len(r):
+                ra.append(float(r[0]))
+                dec.append(float(r[1]))
+
+        ra = np.array(ra)
+        dec = np.array(dec)
+
+        sqlQuery = u"""
+            select * from orbfit_positions where expname = "%(expId)s"
+        """ % locals()
+        orbFitRows = readquery(
+            log=self.log,
+            sqlQuery=sqlQuery,
+            dbConn=atlasMoversDBConn,
+        )
+
+        potSources = len(orbFitRows)
+
+        raOrb = []
+        raOrb[:] = [r["ra_deg"] for r in orbFitRows]
+        decOrb = []
+        decOrb[:] = [r["dec_deg"] for r in orbFitRows]
+
+        raOrb = np.array(raOrb)
+        decOrb = np.array(decOrb)
+
+        mesh = HTM(
+            depth=12,
+            log=self.log
+        )
+        matchIndices1, matchIndices2, seps = mesh.match(
+            ra1=ra,
+            dec1=dec,
+            ra2=raOrb,
+            dec2=decOrb,
+            radius=matchRadius / 3600.,
+            convertToArray=False,
+            maxmatch=0  # 1 = match closest 1, 0 = match all
+        )
+
+        dophotRows = []
+        for m1, m2, s in zip(matchIndices1, matchIndices2, seps):
+            # print ra[m1], dec[m1], " -> ", s * 3600., " arcsec -> ",
+            # raOrb[m2], decOrb[m2]
+            dList = dophotLines[m1].split()
+            dDict = {
+                "ra_deg": dList[0],
+                "dec_deg": dList[1],
+                "m": dList[2],
+                "idx": dList[3],
+                "type": dList[4],
+                "xtsk": dList[5],
+                "ytsk": dList[6],
+                "fitmag": dList[7],
+                "dfitmag": dList[8],
+                "sky": dList[9],
+                "major": dList[10],
+                "minor": dList[11],
+                "phi": dList[12],
+                "probgal": dList[13],
+                "apmag": dList[14],
+                "dapmag": dList[15],
+                "apsky": dList[16],
+                "ap_fit": dList[17],
+                "orbfit_separation_arcsec": s * 3600.,
+                "orbfit_postions_id": orbFitRows[m2]["primaryId"],
+                "expname": expId
+            }
+            dophotRows.append(dDict)
+
+        self.log.info('completed the ``_extract_phot_from_exposure`` method')
+        return dophotRows
+
     def _add_dophot_matches_to_database(
             self,
             dophotMatches,
@@ -193,18 +317,6 @@ class dophotMatch():
             log=self.log,
             sqlQuery=sqlQuery,
             dbConn=self.atlasMoversDBConn
-        )
-
-        sqlQuery = """update
-            atlas_exposures
-        set dophot_match = 2
-        WHERE
-             dophot_match = 1 and local_data = 1 and expname not in (select distinct expname from dophot_match);""" % locals(
-        )
-        writequery(
-            log=self.log,
-            sqlQuery=sqlQuery,
-            dbConn=self.atlasMoversDBConn,
         )
 
         self.log.info(
@@ -262,131 +374,3 @@ WHERE
 
     # use the tab-trigger below for new method
     # xt-class-method
-
-
-def _extract_phot_from_exposure(
-        expId,
-        log,
-        cachePath):
-    """* extract phot from exposure*
-
-    **Key Arguments:**
-        - ``expId`` -- the exposure to extract the dophot photometry from. A tuple of expId and integer MJD
-        - ``cachePath`` -- path to the cache of ATLAS data
-
-    **Return:**
-        - ``dophotRows`` -- the list of matched dophot rows
-    """
-    log.info('starting the ``_extract_phot_from_exposure`` method')
-
-    global atlasMoversDBConn
-    global matchRadius
-
-    dophotFilePath = cachePath + "/" + \
-        expId[0][:3] + "/" + str(expId[1]) + "/" + expId[0] + ".dph"
-
-    # TEST THE FILE EXISTS
-    exists = os.path.exists(dophotFilePath)
-    expId = expId[0]
-    if not exists:
-
-        sqlQuery = """update atlas_exposures set dophot_match = 99 where expname = "%(expId)s" """ % locals(
-        )
-        writequery(
-            log=log,
-            sqlQuery=sqlQuery,
-            dbConn=atlasMoversDBConn,
-        )
-        log.error(
-            'the dophot file %(expId)s.dph is missing from the local ATLAS data cache' % locals())
-        return []
-
-    try:
-        log.debug("attempting to open the file %s" %
-                  (dophotFilePath,))
-        dophotFile = codecs.open(
-            dophotFilePath, encoding='utf-8', mode='r')
-        dophotData = dophotFile.read()
-        dophotFile.close()
-    except IOError, e:
-        message = 'could not open the file %s' % (dophotFilePath,)
-        log.critical(message)
-        raise IOError(message)
-
-    ra = []
-    dec = []
-    dophotLines = dophotData.split("\n")[1:]
-    for r in dophotLines:
-        r = r.split()
-        if len(r):
-            ra.append(float(r[0]))
-            dec.append(float(r[1]))
-
-    ra = np.array(ra)
-    dec = np.array(dec)
-
-    sqlQuery = u"""
-        select * from orbfit_positions where expname = "%(expId)s"
-    """ % locals()
-    orbFitRows = readquery(
-        log=log,
-        sqlQuery=sqlQuery,
-        dbConn=atlasMoversDBConn,
-    )
-
-    potSources = len(orbFitRows)
-
-    raOrb = []
-    raOrb[:] = [r["ra_deg"] for r in orbFitRows]
-    decOrb = []
-    decOrb[:] = [r["dec_deg"] for r in orbFitRows]
-
-    raOrb = np.array(raOrb)
-    decOrb = np.array(decOrb)
-
-    mesh = HTM(
-        depth=12,
-        log=log
-    )
-    matchIndices1, matchIndices2, seps = mesh.match(
-        ra1=ra,
-        dec1=dec,
-        ra2=raOrb,
-        dec2=decOrb,
-        radius=matchRadius / 3600.,
-        convertToArray=False,
-        maxmatch=0  # 1 = match closest 1, 0 = match all
-    )
-
-    dophotRows = []
-    for m1, m2, s in zip(matchIndices1, matchIndices2, seps):
-        # print ra[m1], dec[m1], " -> ", s * 3600., " arcsec -> ",
-        # raOrb[m2], decOrb[m2]
-        dList = dophotLines[m1].split()
-        dDict = {
-            "ra_deg": dList[0],
-            "dec_deg": dList[1],
-            "m": dList[2],
-            "idx": dList[3],
-            "type": dList[4],
-            "xtsk": dList[5],
-            "ytsk": dList[6],
-            "fitmag": dList[7],
-            "dfitmag": dList[8],
-            "sky": dList[9],
-            "major": dList[10],
-            "minor": dList[11],
-            "phi": dList[12],
-            "probgal": dList[13],
-            "apmag": dList[14],
-            "dapmag": dList[15],
-            "apsky": dList[16],
-            "ap_fit": dList[17],
-            "orbfit_separation_arcsec": s * 3600.,
-            "orbfit_postions_id": orbFitRows[m2]["primaryId"],
-            "expname": expId
-        }
-        dophotRows.append(dDict)
-
-    log.info('completed the ``_extract_phot_from_exposure`` method')
-    return dophotRows
