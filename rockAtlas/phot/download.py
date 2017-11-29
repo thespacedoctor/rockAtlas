@@ -400,7 +400,6 @@ WHERE
                 except:
                     self.log.warning(
                         "The path %(datapath)s does not exist - no need to delete" % locals())
-                    sys.exit(0)
 
         mjdString = (',').join(oldMjds)
 
