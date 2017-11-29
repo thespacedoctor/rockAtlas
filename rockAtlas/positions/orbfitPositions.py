@@ -103,17 +103,17 @@ class orbfitPositions():
         else:
             batchSize = 10
 
-        expsoureCount = 1
-        while expsoureCount > 0:
-            expsoureObjects, astorbString, expsoureCount = self._get_exposures_requiring_orbfit_positions(
+        exposureCount = 1
+        while exposureCount > 0:
+            expsoureObjects, astorbString, exposureCount = self._get_exposures_requiring_orbfit_positions(
                 batchSize=batchSize)
-            if expsoureCount:
+            if exposureCount:
                 orbfitPositions = self._get_orbfit_positions(
                     expsoureObjects, astorbString)
                 self._add_orbfit_eph_to_database(
                     orbfitPositions, expsoureObjects)
             if singleExposure:
-                expsoureCount = 0
+                exposureCount = 0
 
         self.log.info('completed the ``get`` method')
         return None
@@ -148,18 +148,18 @@ class orbfitPositions():
             quiet=False
         )
 
-        expsoureCount = rows[0]["count"]
+        exposureCount = rows[0]["count"]
 
         if batchSize > 1:
             text = "%(batchSize)s exposures" % locals()
         else:
             text = "%(batchSize)s exposure" % locals()
 
-        if expsoureCount:
-            print "There are currently %(expsoureCount)s ATLAS exposures with pyephem positions needing tightened - processing the next %(text)s with orbfit" % locals()
+        if exposureCount:
+            print "There are currently %(exposureCount)s ATLAS exposures with pyephem positions needing tightened - processing the next %(text)s with orbfit" % locals()
         else:
             print "There are no more ATLAS exposures requiring to be processed with orbfit"
-            return {}, '', expsoureCount
+            return {}, '', exposureCount
 
         sqlQuery = u"""
             SELECT
@@ -215,7 +215,7 @@ class orbfitPositions():
 
         self.log.info(
             'completed the ``_get_exposures_requiring_orbfit_positions`` method')
-        return expsoureObjects, astorbString, expsoureCount
+        return expsoureObjects, astorbString, exposureCount
 
     def _get_orbfit_positions(
             self,
