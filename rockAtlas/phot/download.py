@@ -133,17 +133,6 @@ def _download_one_night_of_atlas_data(
         if len(fitsDict) == 7:
             allData.append(fitsDict)
 
-    if len(allData):
-        insert_list_of_dictionaries_into_database_tables(
-            dbConn=atlasMoversDBConn,
-            log=log,
-            dictList=allData,
-            dbTableName="atlas_exposures",
-            dateModified=True,
-            batchSize=10000,
-            replace=True
-        )
-
     sqlQuery = """
 update atlas_exposures set dev_flag = 1 where dev_flag = 0 and floor(mjd) in (select mjd from day_tracker where dev_flag = 1);""" % locals(
     )
@@ -153,7 +142,7 @@ update atlas_exposures set dev_flag = 1 where dev_flag = 0 and floor(mjd) in (se
         dbConn=atlasMoversDBConn
     )
 
-    return str(int(mjd))
+    return allData, str(int(mjd))
 
 
 class download():
@@ -241,8 +230,20 @@ class download():
         dbConn = self.atlasMoversDBConn
 
         # DOWNLOAD THE DATA IN PARALLEL
-        results = fmultiprocess(log=self.log, function=_download_one_night_of_atlas_data,
-                                inputArray=mjds, archivePath=archivePath)
+        allData, results = fmultiprocess(log=self.log, function=_download_one_night_of_atlas_data,
+                                         inputArray=mjds, archivePath=archivePath)
+
+        for d in allData:
+            if len(d):
+                insert_list_of_dictionaries_into_database_tables(
+                    dbConn=dbConn,
+                    log=self.log,
+                    dictList=d,
+                    dbTableName="atlas_exposures",
+                    dateModified=True,
+                    batchSize=10000,
+                    replace=True
+                )
 
         # UPDATE BOOKKEEPING
         mjds = []
