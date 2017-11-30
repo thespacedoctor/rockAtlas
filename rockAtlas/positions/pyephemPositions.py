@@ -327,15 +327,17 @@ class pyephemPositions():
         healpix = pyephemDB["healpix"]
         objects = pyephemDB["object_name"]
         mpc_numbers = pyephemDB["mpc_number"]
+        mag = pyephemDB["mag"]
 
         # INDEX PYEPHEM MOVERS IN DICTIONARY BY HEALPIX ID
         moversDict = defaultdict(list)
-        for ind, (p, r, d, o, m) in enumerate(zip(healpix, ra, dec, objects, mpc_numbers)):
+        for ind, (p, r, d, o, m, g) in enumerate(zip(healpix, ra, dec, objects, mpc_numbers, mag)):
             moversDict[p].append(
                 {"object_name": o,
                  "ra_deg": r,
                  "dec_deg": d,
-                 "mpc_number": m
+                 "mpc_number": m,
+                 "mag": g
                  }
             )
 
@@ -382,7 +384,8 @@ def _generate_pyephem_snapshot(
         "dec_deg": [],
         "mpc_number": [],
         "object_name": [],
-        "healpix": []
+        "healpix": [],
+        "mag": []
     }
 
     for d in xephemOE:
@@ -396,6 +399,7 @@ def _generate_pyephem_snapshot(
 
         thisRa = minorPlanet.a_ra * RAD_TO_DEG_FACTOR
         thisDec = minorPlanet.a_dec * RAD_TO_DEG_FACTOR
+        pyephemDB["mag"].append(minorPlanet.mag)
         pyephemDB["ra_deg"].append(thisRa)
         pyephemDB["dec_deg"].append(thisDec)
         pyephemDB["mpc_number"].append(d["mpc_number"])
