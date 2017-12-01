@@ -27,9 +27,10 @@ import shutil
 from astrocalc.times import now
 import math
 from astrocalc.times import conversions
+from fundamentals.mysql import database
 
 
-atlasMoversDBConn = False
+dbSettings = False
 
 
 def _download_one_night_of_atlas_data(
@@ -44,7 +45,13 @@ def _download_one_night_of_atlas_data(
     """
 
     # SETUP A DATABASE CONNECTION FOR THE remote database
-    global atlasMoversDBConn
+    global dbSettings
+
+    # SETUP ALL DATABASE CONNECTIONS
+    atlasMoversDBConn = database(
+        log=log,
+        dbSettings=dbSettings
+    ).connect()
 
     cmd = "rsync -avzL --include='*.dph' --include='*.meta' --include='*/' --exclude='*' dyoung@atlas-base-adm01.ifa.hawaii.edu:/atlas/red/02a/%(mjd)s %(archivePath)s/02a/" % locals(
     )
@@ -181,7 +188,9 @@ class download():
         self.settings = settings
         self.dev_flag = dev_flag
 
-        global atlasMoversDBConn
+        global dbSettings
+
+        dbSettings = self.settings["database settings"]["atlasMovers"]
 
         # xt-self-arg-tmpx
 
@@ -196,7 +205,6 @@ class download():
         self.atlas3DbConn = dbConns["atlas3"]
         self.atlas4DbConn = dbConns["atlas4"]
         self.atlasMoversDBConn = dbConns["atlasMovers"]
-        atlasMoversDBConn = dbConns["atlasMovers"]
 
         return None
 
