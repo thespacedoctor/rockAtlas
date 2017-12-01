@@ -149,7 +149,7 @@ update atlas_exposures set dev_flag = 1 where dev_flag = 0 and floor(mjd) in (se
         dbConn=atlasMoversDBConn
     )
 
-    return allData, str(int(mjd))
+    return (allData, str(int(mjd)))
 
 
 class download():
@@ -238,15 +238,15 @@ class download():
         dbConn = self.atlasMoversDBConn
 
         # DOWNLOAD THE DATA IN PARALLEL
-        allData, results = fmultiprocess(log=self.log, function=_download_one_night_of_atlas_data,
-                                         inputArray=mjds, archivePath=archivePath)
+        results = fmultiprocess(log=self.log, function=_download_one_night_of_atlas_data,
+                                inputArray=mjds, archivePath=archivePath)
 
-        for d in allData:
-            if len(d):
+        for d in results:
+            if len(d[0]):
                 insert_list_of_dictionaries_into_database_tables(
                     dbConn=dbConn,
                     log=self.log,
-                    dictList=d,
+                    dictList=d[0],
                     dbTableName="atlas_exposures",
                     dateModified=True,
                     batchSize=10000,
@@ -255,7 +255,7 @@ class download():
 
         # UPDATE BOOKKEEPING
         mjds = []
-        mjds[:] = [r for r in results if r is not None]
+        mjds[:] = [r[1] for r in results if r[1] is not None]
         mjds = (',').join(mjds)
 
         sqlQuery = """update atlas_exposures set local_data = 1 where floor(mjd) in (%(mjds)s);
