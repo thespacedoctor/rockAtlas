@@ -24,6 +24,9 @@ from fundamentals.mysql import insert_list_of_dictionaries_into_database_tables
 from rockAtlas.bookkeeping import bookkeeper
 
 
+exposureIds = []
+
+
 class dophotMatch():
     """
     *The worker class for the dophotMatch module*
@@ -90,6 +93,8 @@ class dophotMatch():
         remaining = 1
         cachePath = self.settings["atlas archive path"]
 
+        global exposureIds
+
         # SELECT 100 EXPOSURES REQUIRING DOPHOT EXTRACTION
         while remaining > 0:
             exposureIds, remaining = self._select_exposures_requiring_dophot_extraction()
@@ -97,7 +102,7 @@ class dophotMatch():
             if remaining == 0:
                 continue
             dophotMatches = fmultiprocess(log=self.log, function=_extract_phot_from_exposure,
-                                          inputArray=exposureIds, cachePath=cachePath, settings=self.settings)
+                                          inputArray=range(len(exposureIds)), cachePath=cachePath, settings=self.settings)
             self._add_dophot_matches_to_database(
                 dophotMatches=dophotMatches, exposureIds=exposureIds)
 
@@ -242,20 +247,24 @@ WHERE
 
 
 def _extract_phot_from_exposure(
-        expId,
+        expIdIndex,
         log,
         cachePath,
         settings):
     """* extract phot from exposure*
 
     **Key Arguments:**
-        - ``expId`` -- the exposure to extract the dophot photometry from. A tuple of expId and integer MJD
+        - ``expIdIndex`` -- index of the exposure to extract the dophot photometry from. A tuple of expId and integer MJD
         - ``cachePath`` -- path to the cache of ATLAS data
 
     **Return:**
         - ``dophotRows`` -- the list of matched dophot rows
     """
     log.info('starting the ``_extract_phot_from_exposure`` method')
+
+    global exposureIds
+
+    expId = expIdIndex[expIdIndex]
 
     # SETUP A DATABASE CONNECTION FOR THE remote database
     host = settings["database settings"]["atlasMovers"]["host"]
