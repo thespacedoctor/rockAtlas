@@ -25,6 +25,8 @@ from collections import defaultdict
 from fundamentals.mysql import insert_list_of_dictionaries_into_database_tables
 import copy
 from fundamentals.mysql import writequery
+import psutil
+
 
 xephemOE = []
 tileSide = ""
@@ -104,18 +106,20 @@ class pyephemPositions():
         global tileSide
         global magLimit
 
-        xephemOE = self._get_xephem_orbital_elements()
-
         # GRAB PARAMETERS FROM SETTINGS FILE
         tileSide = float(self.settings["pyephem"]["atlas exposure match side"])
         magLimit = float(self.settings["pyephem"]["magnitude limit"])
 
         snapshotsRequired = 1
         while snapshotsRequired > 0:
-            nextMjds, exposures, snapshotsRequired = self._get_exposures_requiring_pyephem_positions()
+            nextMjds, exposures, snapshotsRequired = self._get_exposures_requiring_pyephem_positions(
+                concurrentSnapshots=psutil.cpu_count())
             print "There are currently %(snapshotsRequired)s more pyephem snapshots required " % locals()
             if snapshotsRequired == 0:
                 return
+
+            if len(xephemOE) == 0:
+                xephemOE = self._get_xephem_orbital_elements()
 
             # DEFINE AN INPUT ARRAY
             magLimit = self.settings["pyephem"]["magnitude limit"]

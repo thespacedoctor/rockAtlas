@@ -101,7 +101,7 @@ class orbfitPositions():
         if singleExposure:
             batchSize = 1
         else:
-            batchSize = 10
+            batchSize = 100
 
         exposureCount = 1
         while exposureCount > 0:
