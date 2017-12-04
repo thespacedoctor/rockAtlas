@@ -101,12 +101,8 @@ class dophotMatch():
             print "%(remaining)s locally cached dophot files remain needing to be parsed for orbfit predicted known asteroid positions" % locals()
             if remaining == 0:
                 continue
-            try:
-                dophotMatches = fmultiprocess(log=self.log, function=_extract_phot_from_exposure,
-                                              inputArray=range(len(exposureIds)), cachePath=cachePath, settings=self.settings)
-            except:
-                dophotMatches = fmultiprocess(log=self.log, function=_extract_phot_from_exposure,
-                                              inputArray=range(len(exposureIds)), poolSize=4, cachePath=cachePath, settings=self.settings)
+            dophotMatches = fmultiprocess(log=self.log, function=_extract_phot_from_exposure,
+                                          inputArray=range(len(exposureIds)), cachePath=cachePath, settings=self.settings)
             self._add_dophot_matches_to_database(
                 dophotMatches=dophotMatches, exposureIds=exposureIds)
 
@@ -117,7 +113,7 @@ class dophotMatch():
 
     def _select_exposures_requiring_dophot_extraction(
             self,
-            batch=100):
+            batch=50):
         """* select exposures requiring dophot extraction*
 
         **Key Arguments:**
