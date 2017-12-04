@@ -127,7 +127,7 @@ class dophotMatch():
             'starting the ``_select_exposures_requiring_dophot_extraction`` method')
 
         sqlQuery = u"""
-            select expname, floor(mjd) as mjd from atlas_exposures where local_data = 1 and dophot_match = 0;
+            select expname, floor(mjd) as mjd from atlas_exposures where local_data = 1 and dophot_match = 0 and orbfit_positions = 1;
         """ % locals()
         rows = readquery(
             log=self.log,
