@@ -264,7 +264,7 @@ def _extract_phot_from_exposure(
 
     global exposureIds
 
-    expId = expIdIndex[expIdIndex]
+    expId = exposureIds[expIdIndex]
 
     # SETUP A DATABASE CONNECTION FOR THE remote database
     host = settings["database settings"]["atlasMovers"]["host"]
