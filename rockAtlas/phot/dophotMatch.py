@@ -106,7 +106,7 @@ class dophotMatch():
                                               inputArray=range(len(exposureIds)), cachePath=cachePath, settings=self.settings)
             except:
                 dophotMatches = fmultiprocess(log=self.log, function=_extract_phot_from_exposure,
-                                              inputArray=range(len(exposureIds)), processPool=4, cachePath=cachePath, settings=self.settings)
+                                              inputArray=range(len(exposureIds)), poolSize=4, cachePath=cachePath, settings=self.settings)
             self._add_dophot_matches_to_database(
                 dophotMatches=dophotMatches, exposureIds=exposureIds)
 
