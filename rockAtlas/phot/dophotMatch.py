@@ -181,7 +181,9 @@ class dophotMatch():
 
         exps = ('","').join(exps)
 
-        sqlQuery = """update atlas_exposures set dophot_match = 1 where dophot_match = 0 and expname in ("%(exps)s")""" % locals(
+        sqlQuery = """
+update atlas_exposures set dophot_match = 1 where dophot_match = 0 and expname in ("%(exps)s");
+update atlas_exposures set dophot_match = 2 where dophot_match = 1 and expname not in (select distinct expname from dophot_photometry);""" % locals(
         )
         writequery(
             log=self.log,
