@@ -268,6 +268,8 @@ def _extract_phot_from_exposure(
 
     expId = exposureIds[expIdIndex]
 
+    print "STARTING INDEX %(expIdIndex)s for dophot file %(expId)s" % locals()
+
     # SETUP A DATABASE CONNECTION FOR THE remote database
     host = settings["database settings"]["atlasMovers"]["host"]
     user = settings["database settings"]["atlasMovers"]["user"]
@@ -396,6 +398,8 @@ def _extract_phot_from_exposure(
             "expname": expId
         }
         dophotRows.append(dDict)
+
+    print "RETURNING INDEX %(expIdIndex)s for dophot file %(expId)s" % locals()
 
     log.info('completed the ``_extract_phot_from_exposure`` method')
     return dophotRows
