@@ -127,7 +127,7 @@ class dophotMatch():
             'starting the ``_select_exposures_requiring_dophot_extraction`` method')
 
         sqlQuery = u"""
-            select expname, floor(mjd) as mjd from atlas_exposures where local_data = 1 and dophot_match = 0 and orbfit_positions = 1;
+            select expname, floor(mjd) as mjd from atlas_exposures where local_data = 1 and dophot_match = 0 and orbfit_positions = 1 and expname = "02a57855o0802o";
         """ % locals()
         rows = readquery(
             log=self.log,
@@ -337,7 +337,7 @@ def _extract_phot_from_exposure(
     dec = np.array(dec)
 
     sqlQuery = u"""
-        select * from orbfit_positions where expname = "%(expId)s"
+        select * from orbfit_positions where expname = "%(expId)s" 
     """ % locals()
     orbFitRows = readquery(
         log=log,
