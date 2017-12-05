@@ -102,7 +102,7 @@ class dophotMatch():
             if remaining == 0:
                 continue
             dophotMatches = fmultiprocess(log=self.log, function=_extract_phot_from_exposure,
-                                          inputArray=range(len(exposureIds)), cachePath=cachePath, settings=self.settings)
+                                          inputArray=range(len(exposureIds)), poolSize=5, cachePath=cachePath, settings=self.settings)
             self._add_dophot_matches_to_database(
                 dophotMatches=dophotMatches, exposureIds=exposureIds)
 
@@ -113,7 +113,7 @@ class dophotMatch():
 
     def _select_exposures_requiring_dophot_extraction(
             self,
-            batch=50):
+            batch=100):
         """* select exposures requiring dophot extraction*
 
         **Key Arguments:**
@@ -268,8 +268,6 @@ def _extract_phot_from_exposure(
 
     expId = exposureIds[expIdIndex]
 
-    print "STARTING INDEX %(expIdIndex)s for dophot file %(expId)s" % locals()
-
     # SETUP A DATABASE CONNECTION FOR THE remote database
     host = settings["database settings"]["atlasMovers"]["host"]
     user = settings["database settings"]["atlasMovers"]["user"]
@@ -398,8 +396,6 @@ def _extract_phot_from_exposure(
             "expname": expId
         }
         dophotRows.append(dDict)
-
-    print "RETURNING INDEX %(expIdIndex)s for dophot file %(expId)s" % locals()
 
     log.info('completed the ``_extract_phot_from_exposure`` method')
     return dophotRows
