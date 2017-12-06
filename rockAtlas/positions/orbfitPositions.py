@@ -404,6 +404,8 @@ class orbfitPositions():
         """
         self.log.info('starting the ``_add_orbfit_eph_to_database`` method')
 
+        dbSettings = self.settings["database settings"]["atlasMovers"]
+
         insert_list_of_dictionaries_into_database_tables(
             dbConn=self.atlasMoversDBConn,
             log=self.log,
@@ -412,7 +414,8 @@ class orbfitPositions():
             uniqueKeyList=["expname", "object_name"],
             dateModified=True,
             batchSize=10000,
-            replace=True
+            replace=True,
+            dbSettings=dbSettings
         )
 
         exposures = expsoureObjects.keys()

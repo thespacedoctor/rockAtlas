@@ -222,6 +222,8 @@ class astorb():
 
         print "Refreshing the orbital elements database table"
 
+        dbSettings = self.settings["database settings"]["atlasMovers"]
+
         insert_list_of_dictionaries_into_database_tables(
             dbConn=self.atlasMoversDBConn,
             log=self.log,
@@ -230,7 +232,8 @@ class astorb():
             uniqueKeyList=["name"],
             dateModified=True,
             batchSize=10000,
-            replace=True
+            replace=True,
+            dbSettings=dbSettings
         )
 
         print "Finished refreshing the orbital elements database table"

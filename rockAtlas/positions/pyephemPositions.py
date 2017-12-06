@@ -208,6 +208,8 @@ class pyephemPositions():
         for m in matchedObjects:
             allMatches += m
 
+        dbSettings = self.settings["database settings"]["atlasMovers"]
+
         insert_list_of_dictionaries_into_database_tables(
             dbConn=self.atlasMoversDBConn,
             log=self.log,
@@ -216,7 +218,8 @@ class pyephemPositions():
             uniqueKeyList=["expname", "object_name"],
             dateModified=True,
             batchSize=10000,
-            replace=True
+            replace=True,
+            dbSettings=dbSettings
         )
 
         self.log.info(

@@ -241,6 +241,8 @@ class download():
         results = fmultiprocess(log=self.log, function=_download_one_night_of_atlas_data,
                                 inputArray=mjds, archivePath=archivePath)
 
+        dbSettings = dbSettings
+
         for d in results:
             if len(d[0]):
                 insert_list_of_dictionaries_into_database_tables(
@@ -250,7 +252,8 @@ class download():
                     dbTableName="atlas_exposures",
                     dateModified=True,
                     batchSize=10000,
-                    replace=True
+                    replace=True,
+                    dbSettings=dbSettings
                 )
 
         # UPDATE BOOKKEEPING

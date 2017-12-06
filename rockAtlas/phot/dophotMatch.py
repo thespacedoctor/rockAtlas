@@ -165,6 +165,8 @@ class dophotMatch():
         for d in dophotMatches:
             insertList += d
 
+        dbSettings = self.settings["database settings"]["atlasMovers"]
+
         insert_list_of_dictionaries_into_database_tables(
             dbConn=self.atlasMoversDBConn,
             log=self.log,
@@ -173,7 +175,8 @@ class dophotMatch():
             uniqueKeyList=["expname", "idx"],
             dateModified=True,
             batchSize=10000,
-            replace=True
+            replace=True,
+            dbSettings=dbSettings
         )
 
         exps = []

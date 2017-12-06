@@ -50,6 +50,9 @@ def main(arguments=None):
     *The main function used when ``cl_utils.py`` is run as a single script from the cl, or when installed as a cl command*
     """
     # setup the command-line util settings
+
+    dev_flag = False
+
     su = tools(
         arguments=arguments,
         docString=__doc__,
@@ -121,7 +124,7 @@ def main(arguments=None):
         pyeph = pyephemPositions(
             log=log,
             settings=settings,
-            dev_flag=True
+            dev_flag=dev_flag
         )
         pyeph.get(singleSnapshot=oneFlag)
 
@@ -130,7 +133,7 @@ def main(arguments=None):
         oe = orbfitPositions(
             log=log,
             settings=settings,
-            dev_flag=True
+            dev_flag=dev_flag
         )
         oe.get(singleExposure=oneFlag)
 
@@ -139,7 +142,7 @@ def main(arguments=None):
         data = download(
             log=log,
             settings=settings,
-            dev_flag=True
+            dev_flag=dev_flag
         )
         data.get(days=days)
 
@@ -156,28 +159,65 @@ def main(arguments=None):
         from rockAtlas.positions import pyephemPositions
         from rockAtlas.positions import orbfitPositions
         from rockAtlas.phot import dophotMatch
+        from fundamentals.mysql import readquery
 
-        i = 0
-        while i < 100:
+        # INITIAL ACTIONS
+        # SETUP ALL DATABASE CONNECTIONS
+        from rockAtlas import database
+        db = database(
+            log=log,
+            settings=settings
+        )
+        dbConns, dbVersions = db.connect()
+        atlas3DbConn = dbConns["atlas3"]
+        atlas4DbConn = dbConns["atlas4"]
+        atlasMoversDBConn = dbConns["atlasMovers"]
+
+        while True:
+
+            if dev_flag:
+                o = " and dev_flag = 1"
+            else:
+                o = " "
+
+            sqlQuery = u"""
+                select distinct floor(mjd) from (
+select mjd from atlas_exposures where dophot_match = 0 %(o)s 
+union all 
+select mjd from day_tracker where processed = 0 %(o)s) as a;
+            """ % locals()
+            rows = readquery(
+                log=log,
+                sqlQuery=sqlQuery,
+                dbConn=atlasMoversDBConn,
+                quiet=False
+            )
+
+            if len(rows) == 0:
+                if dev_flag:
+                    print "Processing of the ATLAS development dataset is now complete and up to date"
+                else:
+                    print "Processing of ATLAS data is now complete and up to date"
+                break
 
             data = download(
                 log=log,
                 settings=settings,
-                dev_flag=True
+                dev_flag=dev_flag
             )
             data.get(days=days)
 
             pyeph = pyephemPositions(
                 log=log,
                 settings=settings,
-                dev_flag=True
+                dev_flag=dev_flag
             )
             pyeph.get()
 
             oe = orbfitPositions(
                 log=log,
                 settings=settings,
-                dev_flag=True
+                dev_flag=dev_flag
             )
             oe.get()
 
@@ -186,7 +226,6 @@ def main(arguments=None):
                 settings=settings
             )
             dp.get()
-            i += 1
 
     if "dbConn" in locals() and dbConn:
         dbConn.commit()

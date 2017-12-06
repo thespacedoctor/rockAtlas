@@ -158,6 +158,8 @@ class bookkeeper():
             quiet=False
         )
 
+        dbSettings = self.settings["database settings"]["atlasMovers"]
+
         # TIDY RESULTS BEFORE IMPORT
         entries = list(rows)
 
@@ -171,7 +173,8 @@ class bookkeeper():
                 uniqueKeyList=["expname"],
                 dateModified=False,
                 batchSize=10000,
-                replace=True
+                replace=True,
+                dbSettings=dbSettings
             )
 
         recent = recent.replace("mjd_obs", "mjd")
@@ -208,7 +211,8 @@ class bookkeeper():
                 uniqueKeyList=["expname"],
                 dateModified=False,
                 batchSize=10000,
-                replace=True
+                replace=True,
+                dbSettings=dbSettings
             )
 
         # APPEND HTMIDs TO THE atlas_exposures TABLE
