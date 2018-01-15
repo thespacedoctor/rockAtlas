@@ -289,7 +289,7 @@ def _extract_phot_from_exposure(
         port=sshPort,
         use_unicode=True,
         charset='utf8',
-        client_flag=ms.constants.CLIENT.MULTI_STATEMENT,
+        client_flag=ms.constants.CLIENT.MULTI_STATEMENTS,
         connect_timeout=3600
     )
     thisConn.autocommit(True)
