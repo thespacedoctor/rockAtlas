@@ -60,7 +60,12 @@ def _download_one_night_of_atlas_data(
     stdout, stderr = p.communicate()
     if len(stderr):
         print 'error in rsyncing MJD %(mjd)s data: %(stderr)s' % locals()
-        return None
+        if "No such file" in stderr:
+            ## Recursively create missing directories
+            if not os.path.exists("%(archivePath)s/02a/%(mjd)s" % locals()):
+                 os.makedirs("%(archivePath)s/02a/%(mjd)s" % locals()) 
+        else:
+            return None
 
     cmd = "rsync -avzL --include='*.dph' --include='*.meta' --include='*/' --exclude='*' dyoung@atlas-base-adm01.ifa.hawaii.edu:/atlas/red/01a/%(mjd)s %(archivePath)s/01a/" % locals(
     )
@@ -68,7 +73,12 @@ def _download_one_night_of_atlas_data(
     stdout, stderr = p.communicate()
     if len(stderr):
         print 'error in rsyncing MJD %(mjd)s data: %(stderr)s' % locals()
-        return None
+        if "No such file" in stderr:
+            ## Recursively create missing directories
+            if not os.path.exists("%(archivePath)s/01a/%(mjd)s" % locals()):
+                 os.makedirs("%(archivePath)s/01a/%(mjd)s" % locals()) 
+        else:
+            return None
 
     theseFiles = recursive_directory_listing(
         log=log,
@@ -241,7 +251,7 @@ class download():
         results = fmultiprocess(log=self.log, function=_download_one_night_of_atlas_data,
                                 inputArray=mjds, archivePath=archivePath)
 
-        dbSettings = dbSettings
+        dbSettings = self.settings["database settings"]["atlasMovers"] 
 
         for d in results:
             if len(d[0]):
