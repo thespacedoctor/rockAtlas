@@ -246,7 +246,7 @@ class download():
         dbSettings = self.settings["database settings"]["atlasMovers"]
 
         for d in results:
-            if len(d[0]):
+            if d and len(d[0]):
                 insert_list_of_dictionaries_into_database_tables(
                     dbConn=dbConn,
                     log=self.log,
