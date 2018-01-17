@@ -241,7 +241,9 @@ class download():
         results = fmultiprocess(log=self.log, function=_download_one_night_of_atlas_data,
                                 inputArray=mjds, archivePath=archivePath)
 
-        dbSettings = dbSettings
+        global dbSettings
+
+        dbSettings = self.settings["database settings"]["atlasMovers"]
 
         for d in results:
             if len(d[0]):
