@@ -251,10 +251,14 @@ class download():
         results = fmultiprocess(log=self.log, function=_download_one_night_of_atlas_data,
                                 inputArray=mjds, archivePath=archivePath)
 
-        dbSettings = self.settings["database settings"]["atlasMovers"] 
+
+        global dbSettings
+
+        dbSettings = self.settings["database settings"]["atlasMovers"]
+
 
         for d in results:
-            if len(d[0]):
+            if d and len(d[0]):
                 insert_list_of_dictionaries_into_database_tables(
                     dbConn=dbConn,
                     log=self.log,

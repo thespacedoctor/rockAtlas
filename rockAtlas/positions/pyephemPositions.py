@@ -404,6 +404,9 @@ def _generate_pyephem_snapshot(
         if minorPlanet.mag > magLimit:
             continue
 
+        if d["mpc_number"]:
+            d["mpc_number"] = int(d["mpc_number"])
+
         thisRa = minorPlanet.a_ra * RAD_TO_DEG_FACTOR
         thisDec = minorPlanet.a_dec * RAD_TO_DEG_FACTOR
         pyephemDB["mag"].append(minorPlanet.mag)
