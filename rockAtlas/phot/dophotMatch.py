@@ -113,7 +113,7 @@ class dophotMatch():
 
     def _select_exposures_requiring_dophot_extraction(
             self,
-            batch=100):
+            batch=20):
         """* select exposures requiring dophot extraction*
 
         **Key Arguments:**
