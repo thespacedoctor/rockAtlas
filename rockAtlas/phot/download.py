@@ -59,16 +59,30 @@ def _download_one_night_of_atlas_data(
     p = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True)
     stdout, stderr = p.communicate()
     if len(stderr):
-        print 'error in rsyncing MJD %(mjd)s data: %(stderr)s' % locals()
-        return None
+        if "No such file or directory" in stderr:
+            baseFolderPath="%(archivePath)s/02a/%(mjd)s" % locals()
+            ## Recursively create missing directories
+            if not os.path.exists(baseFolderPath):
+                os.makedirs(baseFolderPath)
+            print 'MJD %(mjd)s data: %(stderr)s' % locals()
+        else:
+            print 'error in rsyncing MJD %(mjd)s data: %(stderr)s' % locals()
+            return None
 
     cmd = "rsync -avzL --include='*.dph' --include='*.meta' --include='*/' --exclude='*' dyoung@atlas-base-adm01.ifa.hawaii.edu:/atlas/red/01a/%(mjd)s %(archivePath)s/01a/" % locals(
     )
     p = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True)
     stdout, stderr = p.communicate()
     if len(stderr):
-        print 'error in rsyncing MJD %(mjd)s data: %(stderr)s' % locals()
-        return None
+        if "No such file or directory" in stderr:
+            baseFolderPath="%(archivePath)s/01a/%(mjd)s" % locals()
+            ## Recursively create missing directories
+            if not os.path.exists(baseFolderPath):
+                os.makedirs(baseFolderPath)
+            print 'MJD %(mjd)s data: %(stderr)s' % locals()
+        else:
+            print 'error in rsyncing MJD %(mjd)s data: %(stderr)s' % locals()
+            return None
 
     theseFiles = recursive_directory_listing(
         log=log,
@@ -241,10 +255,14 @@ class download():
         results = fmultiprocess(log=self.log, function=_download_one_night_of_atlas_data,
                                 inputArray=mjds, archivePath=archivePath)
 
-        dbSettings = dbSettings
+
+        global dbSettings
+
+        dbSettings = self.settings["database settings"]["atlasMovers"]
+
 
         for d in results:
-            if len(d[0]):
+            if d and len(d[0]):
                 insert_list_of_dictionaries_into_database_tables(
                     dbConn=dbConn,
                     log=self.log,
@@ -258,17 +276,18 @@ class download():
 
         # UPDATE BOOKKEEPING
         mjds = []
-        mjds[:] = [r[1] for r in results if r[1] is not None]
+        mjds[:] = [r[1] for r in results if (r and r[1] is not None)]
         mjds = (',').join(mjds)
 
-        sqlQuery = """update atlas_exposures set local_data = 1 where floor(mjd) in (%(mjds)s);
-    update day_tracker set processed = 1 where mjd in (%(mjds)s);""" % locals(
-        )
-        writequery(
-            log=self.log,
-            sqlQuery=sqlQuery,
-            dbConn=self.atlasMoversDBConn,
-        )
+        if len(mjds):
+            sqlQuery = """update atlas_exposures set local_data = 1 where floor(mjd) in (%(mjds)s);
+        update day_tracker set processed = 1 where mjd in (%(mjds)s);""" % locals(
+            )
+            writequery(
+                log=self.log,
+                sqlQuery=sqlQuery,
+                dbConn=self.atlasMoversDBConn,
+            )
 
         bk = bookkeeper(
             log=self.log,
