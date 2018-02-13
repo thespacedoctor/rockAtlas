@@ -210,7 +210,7 @@ select mjd from day_tracker where processed = 0 %(o)s) as a;
             )
             data.get(days=days)
 
-            print "%d seconds to download ATLAS cache of %d days" % (time.time() - start_time, days)
+            print "%d seconds to download ATLAS cache of %d days\n" % (time.time() - start_time, days)
             start_time = time.time()
 
             pyeph = pyephemPositions(
@@ -220,7 +220,7 @@ select mjd from day_tracker where processed = 0 %(o)s) as a;
             )
             pyeph.get()
 
-            print "%d seconds to generate pyephem snapshots" % (time.time() - start_time,)
+            print "%d seconds to generate pyephem snapshots\n" % (time.time() - start_time,)
             start_time = time.time()
 
             oe = orbfitPositions(
@@ -230,7 +230,7 @@ select mjd from day_tracker where processed = 0 %(o)s) as a;
             )
             oe.get()
 
-            print "%d seconds to generate orbfit positions" % (time.time() - start_time,)
+            print "%d seconds to generate orbfit positions\n" % (time.time() - start_time,)
             start_time = time.time()
 
             dp = dophotMatch(
@@ -239,7 +239,7 @@ select mjd from day_tracker where processed = 0 %(o)s) as a;
             )
             dp.get()
 
-            print "%d seconds to extract dophot measurements" % (time.time() - start_time,)
+            print "%d seconds to extract dophot measurements\n" % (time.time() - start_time,)
             start_time = time.time()
 
     if "dbConn" in locals() and dbConn:
