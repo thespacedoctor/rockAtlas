@@ -210,7 +210,7 @@ select mjd from day_tracker where processed = 0 %(o)s) as a;
             )
             data.get(days=days)
 
-            print "%d seconds to download ATLAS cache of %d days\n" % (time.time() - start_time, days)
+            print "%d seconds to download ATLAS cache of %s days\n" % (time.time() - start_time, days)
             start_time = time.time()
 
             pyeph = pyephemPositions(
