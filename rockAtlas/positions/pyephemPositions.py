@@ -113,7 +113,7 @@ class pyephemPositions():
         snapshotsRequired = 1
         while snapshotsRequired > 0:
             nextMjds, exposures, snapshotsRequired = self._get_exposures_requiring_pyephem_positions(
-                concurrentSnapshots=psutil.cpu_count())
+                concurrentSnapshots=int(self.settings["pyephem"]["batch size"]))
             print "There are currently %(snapshotsRequired)s more pyephem snapshots required " % locals()
             if snapshotsRequired == 0:
                 return

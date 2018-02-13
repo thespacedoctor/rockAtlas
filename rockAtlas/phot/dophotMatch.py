@@ -97,7 +97,8 @@ class dophotMatch():
 
         # SELECT 100 EXPOSURES REQUIRING DOPHOT EXTRACTION
         while remaining > 0:
-            exposureIds, remaining = self._select_exposures_requiring_dophot_extraction()
+            exposureIds, remaining = self._select_exposures_requiring_dophot_extraction(
+                batch=int(self.settings["dophot"]["batch size"]))
             print "%(remaining)s locally cached dophot files remain needing to be parsed for orbfit predicted known asteroid positions" % locals()
             if remaining == 0:
                 continue
@@ -113,7 +114,7 @@ class dophotMatch():
 
     def _select_exposures_requiring_dophot_extraction(
             self,
-            batch=30):
+            batch=10):
         """* select exposures requiring dophot extraction*
 
         **Key Arguments:**
@@ -294,7 +295,7 @@ def _extract_phot_from_exposure(
     )
     thisConn.autocommit(True)
 
-    matchRadius = float(settings["dophot search radius"])
+    matchRadius = float(settings["dophot"]["search radius"])
 
     dophotFilePath = cachePath + "/" + \
         expId[0][:3] + "/" + str(expId[1]) + "/" + expId[0] + ".dph"
