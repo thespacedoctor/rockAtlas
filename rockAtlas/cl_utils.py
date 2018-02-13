@@ -39,6 +39,7 @@ os.environ['TERM'] = 'vt100'
 import readline
 import glob
 import pickle
+import time
 from docopt import docopt
 from fundamentals import tools, times
 from subprocess import Popen, PIPE, STDOUT
@@ -182,8 +183,8 @@ def main(arguments=None):
 
             sqlQuery = u"""
                 select distinct floor(mjd) from (
-select mjd from atlas_exposures where dophot_match = 0 %(o)s 
-union all 
+select mjd from atlas_exposures where dophot_match = 0 %(o)s
+union all
 select mjd from day_tracker where processed = 0 %(o)s) as a;
             """ % locals()
             rows = readquery(
@@ -200,12 +201,17 @@ select mjd from day_tracker where processed = 0 %(o)s) as a;
                     print "Processing of ATLAS data is now complete and up to date"
                 break
 
+            start_time = time.time()
+
             data = download(
                 log=log,
                 settings=settings,
                 dev_flag=dev_flag
             )
             data.get(days=days)
+
+            print "%d seconds to download ATLAS cache of %d days" % (time.time() - start_time, days)
+            start_time = time.time()
 
             pyeph = pyephemPositions(
                 log=log,
@@ -214,6 +220,9 @@ select mjd from day_tracker where processed = 0 %(o)s) as a;
             )
             pyeph.get()
 
+            print "%d seconds to generate pyephem snapshots" % (time.time() - start_time,)
+            start_time = time.time()
+
             oe = orbfitPositions(
                 log=log,
                 settings=settings,
@@ -221,11 +230,17 @@ select mjd from day_tracker where processed = 0 %(o)s) as a;
             )
             oe.get()
 
+            print "%d seconds to generate orbfit positions" % (time.time() - start_time,)
+            start_time = time.time()
+
             dp = dophotMatch(
                 log=log,
                 settings=settings
             )
             dp.get()
+
+            print "%d seconds to extract dophot measurements" % (time.time() - start_time,)
+            start_time = time.time()
 
     if "dbConn" in locals() and dbConn:
         dbConn.commit()
