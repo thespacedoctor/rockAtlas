@@ -245,7 +245,7 @@ class pyephemPositions():
 
         expIds = ('","').join(expIds)
 
-        sqlQuery = """update atlas_exposures set pyephem_positions = 1 where expname in ("%(expIds)s") """ % locals(
+        sqlQuery = """update atlas_exposures a, pyephem_positions p set a.pyephem_positions = 1 where a.pyephem_positions = 0 and a.expname=p.expname;""" % locals(
         )
         writequery(
             log=self.log,
