@@ -90,10 +90,14 @@ class dophotMatch():
         """
         self.log.info('starting the ``get`` method')
 
-        remaining = 1
         cachePath = self.settings["atlas archive path"]
 
         global exposureIds
+        exposureIds, remaining = self._select_exposures_requiring_dophot_extraction(
+            batch=int(self.settings["dophot"]["batch size"]))
+        if remaining == 0:
+            print "%(remaining)s locally cached dophot files remain needing to be parsed for orbfit predicted known asteroid positions" % locals()
+            return None
 
         # SELECT 100 EXPOSURES REQUIRING DOPHOT EXTRACTION
         while remaining > 0:
