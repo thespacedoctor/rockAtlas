@@ -22,7 +22,8 @@ from HMpTy import HTM
 import pymysql as ms
 from fundamentals.mysql import insert_list_of_dictionaries_into_database_tables
 from rockAtlas.bookkeeping import bookkeeper
-from mem_top import mem_top
+from pympler.tracker import SummaryTracker
+tracker = SummaryTracker()
 
 exposureIds = []
 
@@ -112,7 +113,7 @@ class dophotMatch():
                 dophotMatches=dophotMatches, exposureIds=exposureIds)
             dophotMatches = None
 
-            print mem_top()
+            tracker.print_diff()
 
         self._add_value_to_dophot_table()
 
