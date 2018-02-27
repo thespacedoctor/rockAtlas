@@ -110,6 +110,7 @@ class dophotMatch():
                                           inputArray=range(len(exposureIds)), poolSize=5, timeout=300, cachePath=cachePath, settings=self.settings)
             self._add_dophot_matches_to_database(
                 dophotMatches=dophotMatches, exposureIds=exposureIds)
+            dophotMatches = None
 
         self._add_value_to_dophot_table()
 
@@ -335,6 +336,9 @@ def _extract_phot_from_exposure(
     ra = []
     dec = []
     dophotLines = dophotData.split("\n")[1:]
+
+    # FREE MEMORY
+    dophotData = None
     for r in dophotLines:
         r = r.split()
         if len(r):
@@ -377,6 +381,10 @@ def _extract_phot_from_exposure(
         maxmatch=0  # 1 = match closest 1, 0 = match all
     )
 
+    # FREE MEMORY
+    raOrb = None
+    decOrb = None
+
     dophotRows = []
     for m1, m2, s in zip(matchIndices1, matchIndices2, seps):
         # print ra[m1], dec[m1], " -> ", s * 3600., " arcsec -> ",
@@ -406,6 +414,10 @@ def _extract_phot_from_exposure(
             "expname": expId
         }
         dophotRows.append(dDict)
+
+    # FREE MEMORY
+    dophotLines = None
+    orbFitRows = None
 
     log.info('completed the ``_extract_phot_from_exposure`` method')
     return dophotRows
