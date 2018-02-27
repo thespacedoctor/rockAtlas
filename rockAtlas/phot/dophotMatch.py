@@ -107,7 +107,7 @@ class dophotMatch():
             if remaining == 0:
                 continue
             dophotMatches = fmultiprocess(log=self.log, function=_extract_phot_from_exposure,
-                                          inputArray=range(len(exposureIds)), poolSize=5, cachePath=cachePath, settings=self.settings)
+                                          inputArray=range(len(exposureIds)), poolSize=5, timeout=300, cachePath=cachePath, settings=self.settings)
             self._add_dophot_matches_to_database(
                 dophotMatches=dophotMatches, exposureIds=exposureIds)
 

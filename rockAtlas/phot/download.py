@@ -60,8 +60,8 @@ def _download_one_night_of_atlas_data(
     stdout, stderr = p.communicate()
     if len(stderr):
         if "No such file or directory" in stderr:
-            baseFolderPath="%(archivePath)s/02a/%(mjd)s" % locals()
-            ## Recursively create missing directories
+            baseFolderPath = "%(archivePath)s/02a/%(mjd)s" % locals()
+            # Recursively create missing directories
             if not os.path.exists(baseFolderPath):
                 os.makedirs(baseFolderPath)
             print 'MJD %(mjd)s data: %(stderr)s' % locals()
@@ -75,8 +75,8 @@ def _download_one_night_of_atlas_data(
     stdout, stderr = p.communicate()
     if len(stderr):
         if "No such file or directory" in stderr:
-            baseFolderPath="%(archivePath)s/01a/%(mjd)s" % locals()
-            ## Recursively create missing directories
+            baseFolderPath = "%(archivePath)s/01a/%(mjd)s" % locals()
+            # Recursively create missing directories
             if not os.path.exists(baseFolderPath):
                 os.makedirs(baseFolderPath)
             print 'MJD %(mjd)s data: %(stderr)s' % locals()
@@ -252,14 +252,12 @@ class download():
         dbConn = self.atlasMoversDBConn
 
         # DOWNLOAD THE DATA IN PARALLEL
-        results = fmultiprocess(log=self.log, function=_download_one_night_of_atlas_data,
+        results = fmultiprocess(log=self.log, function=_download_one_night_of_atlas_data, timeout=3600,
                                 inputArray=mjds, archivePath=archivePath)
-
 
         global dbSettings
 
         dbSettings = self.settings["database settings"]["atlasMovers"]
-
 
         for d in results:
             if d and len(d[0]):

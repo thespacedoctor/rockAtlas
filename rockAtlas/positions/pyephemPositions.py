@@ -123,7 +123,7 @@ class pyephemPositions():
 
             # DEFINE AN INPUT ARRAY
             magLimit = self.settings["pyephem"]["magnitude limit"]
-            pyephemDB = fmultiprocess(log=self.log, function=_generate_pyephem_snapshot,
+            pyephemDB = fmultiprocess(log=self.log, function=_generate_pyephem_snapshot, timeout=300,
                                       inputArray=nextMjds, magLimit=magLimit)
 
             matchedObjects = []
@@ -253,12 +253,7 @@ class pyephemPositions():
             dbConn=self.atlasMoversDBConn,
         )
 
-        sqlQuery = """update
-            atlas_exposures
-        set orbfit_positions = 2, dophot_match = 2, pyephem_positions = 2
-        WHERE
-            pyephem_positions = 1
-                AND (orbfit_positions = 0 or dophot_match = 0) and local_data = 1 and expname not in (select distinct expname from pyephem_positions);""" % locals(
+        sqlQuery = """update atlas_exposures set pyephem_positions = 2, dophot_match = 2, orbfit_positions = 2 where pyephem_positions = 0 and expname in ("%(expIds)s");""" % locals(
         )
         writequery(
             log=self.log,
@@ -350,7 +345,7 @@ class pyephemPositions():
 
         # MATCH THE PYEPHEM MOVERS AGAINST THE ATLAS EXPOSURES
         matchedObjects = []
-        results = fmultiprocess(log=self.log, function=_match_single_exposure_against_pyephem_db,
+        results = fmultiprocess(log=self.log, function=_match_single_exposure_against_pyephem_db, timeout=120,
                                 inputArray=exposures)
         for r in results:
             matchedObjects += r
