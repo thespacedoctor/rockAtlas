@@ -22,7 +22,7 @@ from HMpTy import HTM
 import pymysql as ms
 from fundamentals.mysql import insert_list_of_dictionaries_into_database_tables
 from rockAtlas.bookkeeping import bookkeeper
-
+from mem_top import mem_top
 
 exposureIds = []
 
@@ -112,6 +112,8 @@ class dophotMatch():
                 dophotMatches=dophotMatches, exposureIds=exposureIds)
             dophotMatches = None
 
+            print mem_top()
+
         self._add_value_to_dophot_table()
 
         self.log.info('completed the ``get`` method')
@@ -127,7 +129,7 @@ class dophotMatch():
 
         **Return:**
             - ``expnames`` -- the names of the expsoures in the batch
-            - ``remaining`` -- the number of exposured remainging that require orbfit/dophot crossmatching 
+            - ``remaining`` -- the number of exposured remainging that require orbfit/dophot crossmatching
         """
         self.log.info(
             'starting the ``_select_exposures_requiring_dophot_extraction`` method')
@@ -213,9 +215,9 @@ update atlas_exposures set dophot_match = 2 where dophot_match = 1 and expname n
         # ADD SEPARATION RANK TO DOPHOT TABLE
         sqlQuery = """
 UPDATE dophot_photometry a,
-    (SELECT 
+    (SELECT
         t.primaryId,
-            (SELECT 
+            (SELECT
                     COUNT(*) + 1
                 FROM
                     dophot_photometry t2
@@ -224,8 +226,8 @@ UPDATE dophot_photometry a,
                         AND t2.orbfit_postions_id = t.orbfit_postions_id
                         AND t2.orbfit_separation_arcsec < t.orbfit_separation_arcsec) AS match_rank
     FROM
-        dophot_photometry t where t.sep_rank is null) b 
-SET 
+        dophot_photometry t where t.sep_rank is null) b
+SET
     a.sep_rank = b.match_rank
 WHERE
     a.primaryId = b.primaryId
@@ -238,8 +240,8 @@ WHERE
         )
 
         sqlQuery = """UPDATE dophot_photometry d,
-    orbfit_positions o 
-SET 
+    orbfit_positions o
+SET
     d.object_name = o.object_name,
     d.orbital_elements_id = o.orbital_elements_id
 WHERE
@@ -349,7 +351,7 @@ def _extract_phot_from_exposure(
     dec = np.array(dec)
 
     sqlQuery = u"""
-        select * from orbfit_positions where expname = "%(expId)s" 
+        select * from orbfit_positions where expname = "%(expId)s"
     """ % locals()
     orbFitRows = readquery(
         log=log,
