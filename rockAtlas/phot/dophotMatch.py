@@ -316,7 +316,7 @@ def _extract_phot_from_exposure(
             sqlQuery=sqlQuery,
             dbConn=thisConn,
         )
-        log.error(
+        log.info(
             'the dophot file %(expId)s.dph is missing from the local ATLAS data cache' % locals())
         return []
 
