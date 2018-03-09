@@ -350,11 +350,30 @@ def _extract_phot_from_exposure(
     sqlQuery = u"""
         select * from orbfit_positions where expname = "%(expId)s"
     """ % locals()
-    orbFitRows = readquery(
-        log=log,
-        sqlQuery=sqlQuery,
-        dbConn=thisConn,
-    )
+    try:
+        orbFitRows = readquery(
+            log=log,
+            sqlQuery=sqlQuery,
+            dbConn=thisConn,
+        )
+    except:
+        thisConn = ms.connect(
+            host=host,
+            user=user,
+            passwd=passwd,
+            db=dbName,
+            port=sshPort,
+            use_unicode=True,
+            charset='utf8',
+            client_flag=ms.constants.CLIENT.MULTI_STATEMENTS,
+            connect_timeout=3600
+        )
+        thisConn.autocommit(True)
+        orbFitRows = readquery(
+            log=log,
+            sqlQuery=sqlQuery,
+            dbConn=thisConn,
+        )
 
     potSources = len(orbFitRows)
 
