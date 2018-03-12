@@ -110,6 +110,15 @@ class pyephemPositions():
         tileSide = float(self.settings["pyephem"]["atlas exposure match side"])
         magLimit = float(self.settings["pyephem"]["magnitude limit"])
 
+        # DELETE OLD PYEPHEM POSITIONS ONCE DOPHOT MATCH HAS BEEN MADE
+        sqlQuery = """delete FROM pyephem_positions where expname in (select expname from atlas_exposures where dophot_match = 1);""" % locals(
+        )
+        writequery(
+            log=self.log,
+            sqlQuery=sqlQuery,
+            dbConn=self.atlasMoversDBConn
+        )
+
         snapshotsRequired = 1
         while snapshotsRequired > 0:
             nextMjds, exposures, snapshotsRequired = self._get_exposures_requiring_pyephem_positions(
