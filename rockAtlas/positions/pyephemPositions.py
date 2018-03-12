@@ -111,13 +111,13 @@ class pyephemPositions():
         magLimit = float(self.settings["pyephem"]["magnitude limit"])
 
         # DELETE OLD PYEPHEM POSITIONS ONCE DOPHOT MATCH HAS BEEN MADE
-        sqlQuery = """delete FROM pyephem_positions where expname in (select expname from atlas_exposures where dophot_match = 1);""" % locals(
-        )
-        writequery(
-            log=self.log,
-            sqlQuery=sqlQuery,
-            dbConn=self.atlasMoversDBConn
-        )
+        # sqlQuery = """delete FROM pyephem_positions where expname in (select expname from atlas_exposures where dophot_match = 1);""" % locals(
+        # )
+        # writequery(
+        #     log=self.log,
+        #     sqlQuery=sqlQuery,
+        #     dbConn=self.atlasMoversDBConn
+        # )
 
         snapshotsRequired = 1
         while snapshotsRequired > 0:
