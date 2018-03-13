@@ -1,6 +1,6 @@
 #!/bin/bash
 ps_out=`ps -ef | grep rockAtlas | grep -v 'grep' | grep -v $0`
-result=$(echo $ps_out | grep -E "rockAtlas orbfit|rockAtlas pyephem")
+result=$(echo $ps_out | grep -E "rockAtlas orbfit|rockAtlas dophot")
 if [[ "$result" != "" ]];then
     echo "rockAtlas already generating orbfit positions - moving on"
 else
