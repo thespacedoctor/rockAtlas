@@ -49,6 +49,7 @@ def main(arguments=None):
     i = 0
     outputList = []
     rsyncContent = []
+    stampCutter = []
     obscodes = {"02": "T05", "01": "T08"}
 
     # SETUP THE COMMAND-LINE UTIL SETTINGS
@@ -253,6 +254,8 @@ def main(arguments=None):
                     ssobject_ = ssobject.replace(" ", "_")
                     raStr = r["ra_deg"]
                     decStr = r["dec_deg"]
+                    stampCutter.append(
+                        "pix2sky -sky2pix %(ssobject_)s_atlas_exposures/%(expname)s.fits.fz %(raStr)s %(decStr)s -print0 | xargs -I coords bash -c 'monsta /atlas/src/trunk/red/subarray.pro %(ssobject_)s_atlas_exposures/%(expname)s.fits.fz %(ssobject_)s_atlas_exposures/%(expname)s_stamp.fits coords 200 10560' | xargs" % locals())
                     rsyncContent.append(
                         "rsync -av dyoung@atlas-base-adm01.ifa.hawaii.edu:/atlas/red/%(expPrefix)sa/%(thisMjd)s/%(expname)s.fits.fz %(ssobject_)s_atlas_exposures/" % locals())
                     rsyncContent.append(
@@ -270,6 +273,18 @@ def main(arguments=None):
     ssobject = ssobject.replace(" ", "_")
     csvData = dataSet.csv(
         filepath="./%(ssobject)s_atlas_exposure_matches.csv" % locals())
+
+    stampCutter = ("\n").join(stampCutter)
+    pathToWriteFile = "./%(ssobject)s_stamp_cutter.sh" % locals()
+    try:
+        log.debug("attempting to open the file %s" % (pathToWriteFile,))
+        writeFile = codecs.open(pathToWriteFile, encoding='utf-8', mode='w')
+    except IOError, e:
+        message = 'could not open the file %s' % (pathToWriteFile,)
+        log.critical(message)
+        raise IOError(message)
+    writeFile.write(stampCutter)
+    writeFile.close()
 
     rsyncContent = ("\n").join(rsyncContent)
     pathToWriteFile = "./%(ssobject)s_atlas_exposure_rsync.sh" % locals()
