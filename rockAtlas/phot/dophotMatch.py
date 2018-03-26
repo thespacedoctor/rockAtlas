@@ -87,7 +87,7 @@ class dophotMatch():
 
             See class docstring
         """
-        self.log.info('starting the ``get`` method')
+        self.log.debug('starting the ``get`` method')
 
         cachePath = self.settings["atlas archive path"]
 
@@ -107,13 +107,15 @@ class dophotMatch():
                 continue
             dophotMatches = fmultiprocess(log=self.log, function=_extract_phot_from_exposure,
                                           inputArray=range(len(exposureIds)), poolSize=5, timeout=300, cachePath=cachePath, settings=self.settings)
+
             self._add_dophot_matches_to_database(
                 dophotMatches=dophotMatches, exposureIds=exposureIds)
+
             dophotMatches = None
 
         self._add_value_to_dophot_table()
 
-        self.log.info('completed the ``get`` method')
+        self.log.debug('completed the ``get`` method')
         return None
 
     def _select_exposures_requiring_dophot_extraction(
@@ -128,7 +130,7 @@ class dophotMatch():
             - ``expnames`` -- the names of the expsoures in the batch
             - ``remaining`` -- the number of exposured remainging that require orbfit/dophot crossmatching
         """
-        self.log.info(
+        self.log.debug(
             'starting the ``_select_exposures_requiring_dophot_extraction`` method')
 
         sqlQuery = u"""
@@ -146,7 +148,7 @@ class dophotMatch():
         expnames = []
         expnames[:] = [(r["expname"], int(r["mjd"])) for r in rows[:batch]]
 
-        self.log.info(
+        self.log.debug(
             'completed the ``_select_exposures_requiring_dophot_extraction`` method')
         return expnames, remaining
 
@@ -163,7 +165,7 @@ class dophotMatch():
         **Return:**
             - None
         """
-        self.log.info(
+        self.log.debug(
             'starting the ``_add_dophot_matches_to_database`` method')
 
         insertList = []
@@ -199,7 +201,7 @@ update atlas_exposures set dophot_match = 2 where dophot_match = 1 and expname n
             dbConn=self.atlasMoversDBConn
         )
 
-        self.log.info(
+        self.log.debug(
             'completed the ``_add_dophot_matches_to_database`` method')
         return None
 
@@ -207,7 +209,7 @@ update atlas_exposures set dophot_match = 2 where dophot_match = 1 and expname n
             self):
         """*add value to dophot table*
         """
-        self.log.info('starting the ``_add_value_to_dophot_table`` method')
+        self.log.debug('starting the ``_add_value_to_dophot_table`` method')
 
         # ADD SEPARATION RANK TO DOPHOT TABLE
         sqlQuery = """
@@ -249,7 +251,7 @@ WHERE
             dbConn=self.atlasMoversDBConn
         )
 
-        self.log.info('completed the ``_add_value_to_dophot_table`` method')
+        self.log.debug('completed the ``_add_value_to_dophot_table`` method')
         return None
 
     # use the tab-trigger below for new method
@@ -270,11 +272,13 @@ def _extract_phot_from_exposure(
     **Return:**
         - ``dophotRows`` -- the list of matched dophot rows
     """
-    log.info('starting the ``_extract_phot_from_exposure`` method')
+    log.debug('starting the ``_extract_phot_from_exposure`` method')
 
     global exposureIds
 
+    print "HERE"
     expId = exposureIds[expIdIndex]
+    print "HERE2"
 
     # SETUP A DATABASE CONNECTION FOR THE remote database
     host = settings["database settings"]["atlasMovers"]["host"]
@@ -437,5 +441,5 @@ def _extract_phot_from_exposure(
     dophotLines = None
     orbFitRows = None
 
-    log.info('completed the ``_extract_phot_from_exposure`` method')
+    log.debug('completed the ``_extract_phot_from_exposure`` method')
     return dophotRows

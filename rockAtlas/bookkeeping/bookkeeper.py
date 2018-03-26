@@ -92,7 +92,7 @@ class bookkeeper():
                 )
                 bk.clean_all()
         """
-        self.log.info('starting the ``get`` method')
+        self.log.debug('starting the ``get`` method')
 
         if self.fullUpdate:
             recent = False
@@ -102,7 +102,7 @@ class bookkeeper():
         self.import_new_atlas_pointings(recent)
         self._run_bookkeeping_sql_scripts()
 
-        self.log.info('completed the ``get`` method')
+        self.log.debug('completed the ``get`` method')
         return bookkeeper
 
     def import_new_atlas_pointings(
@@ -128,7 +128,7 @@ class bookkeeper():
                 )
                 bk.import_new_atlas_pointings()
         """
-        self.log.info('starting the ``import_new_atlas_pointings`` method')
+        self.log.debug('starting the ``import_new_atlas_pointings`` method')
 
         if recent:
             mjd = mjdnow(
@@ -227,14 +227,14 @@ class bookkeeper():
 
         print "ATLAS pointings synced between ATLAS3/ATLAS4 databases and the ATLAS Movers `atlas_exposures` database table"
 
-        self.log.info('completed the ``import_new_atlas_pointings`` method')
+        self.log.debug('completed the ``import_new_atlas_pointings`` method')
         return None
 
     def _run_bookkeeping_sql_scripts(
             self):
         """*run bookkeeping sql scripts*
         """
-        self.log.info('starting the ``_run_bookkeeping_sql_scripts`` method')
+        self.log.debug('starting the ``_run_bookkeeping_sql_scripts`` method')
 
         moduleDirectory = os.path.dirname(__file__)
         mysqlScripts = moduleDirectory + "/mysql"
@@ -252,7 +252,7 @@ class bookkeeper():
             failureRule=False
         )
 
-        self.log.info('completed the ``_run_bookkeeping_sql_scripts`` method')
+        self.log.debug('completed the ``_run_bookkeeping_sql_scripts`` method')
         return None
 
     # use the tab-trigger below for new method

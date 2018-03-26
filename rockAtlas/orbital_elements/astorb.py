@@ -80,13 +80,13 @@ class astorb():
 
             See class docstring
         """
-        self.log.info('starting the ``refresh`` method')
+        self.log.debug('starting the ``refresh`` method')
 
         astorbgz = self._download_astorb()
         astorbDictList = self._parse_astorb_database_file(astorbgz)
         self._import_astorb_to_database(astorbDictList)
 
-        self.log.info('completed the ``refresh`` method')
+        self.log.debug('completed the ``refresh`` method')
         return None
 
     def _download_astorb(
@@ -96,7 +96,7 @@ class astorb():
         **Key Arguments:**
             - ``astorbgz`` -- path to the downloaded astorb database file
         """
-        self.log.info('starting the ``_download_astorb`` method')
+        self.log.debug('starting the ``_download_astorb`` method')
 
         # DOWNLOAD ASTORB
         url = self.settings["astorb"]["url"]
@@ -111,7 +111,7 @@ class astorb():
 
         print "Finished downloading orbital elements" % locals()
 
-        self.log.info('completed the ``_download_astorb`` method')
+        self.log.debug('completed the ``_download_astorb`` method')
         return astorbgz
 
     def _parse_astorb_database_file(
@@ -125,7 +125,7 @@ class astorb():
         **Return:**
             - ``astorbDictList`` -- the astorb database parsed as a list of dictionaries
         """
-        self.log.info('starting the ``_parse_astorb_database_file`` method')
+        self.log.debug('starting the ``_parse_astorb_database_file`` method')
 
         print "Parsing the astorb.dat orbital elements file"
 
@@ -204,7 +204,7 @@ class astorb():
 
         print "Finshed parsing the astorb.dat orbital elements file"
 
-        self.log.info('completed the ``_parse_astorb_database_file`` method')
+        self.log.debug('completed the ``_parse_astorb_database_file`` method')
         return astorbDictList
 
     def _import_astorb_to_database(
@@ -218,7 +218,7 @@ class astorb():
         **Return:**
             - None
         """
-        self.log.info('starting the ``_import_astorb_to_database`` method')
+        self.log.debug('starting the ``_import_astorb_to_database`` method')
 
         print "Refreshing the orbital elements database table"
 
@@ -238,7 +238,7 @@ class astorb():
 
         print "Finished refreshing the orbital elements database table"
 
-        self.log.info('completed the ``_import_astorb_to_database`` method')
+        self.log.debug('completed the ``_import_astorb_to_database`` method')
         return None
 
     # use the tab-trigger below for new method

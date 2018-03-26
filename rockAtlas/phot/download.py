@@ -238,7 +238,7 @@ class download():
 
             See class docstring
         """
-        self.log.info('starting the ``get`` method')
+        self.log.debug('starting the ``get`` method')
 
         self._remove_processed_data()
 
@@ -294,7 +294,7 @@ class download():
         )
         bk.clean_all()
 
-        self.log.info('completed the ``get`` method')
+        self.log.debug('completed the ``get`` method')
         return None
 
     def _determine_mjds_to_download(
@@ -308,7 +308,7 @@ class download():
         **Return:**
             - ``mjds`` -- a list of the MJDs to be downloaded from the ATLAS datastore in hawaii
         """
-        self.log.info('starting the ``_determine_mjds_to_download`` method')
+        self.log.debug('starting the ``_determine_mjds_to_download`` method')
 
         # COUNT DOWNLOADED NIGHTS
         sqlQuery = u"""
@@ -372,14 +372,14 @@ SELECT DISTINCT
         mjds = []
         mjds[:] = [int(r["mjdInt"]) for r in rows]
 
-        self.log.info('completed the ``_determine_mjds_to_download`` method')
+        self.log.debug('completed the ``_determine_mjds_to_download`` method')
         return mjds
 
     def _remove_processed_data(
             self):
         """*remove processed data*
         """
-        self.log.info('starting the ``_remove_processed_data`` method')
+        self.log.debug('starting the ``_remove_processed_data`` method')
 
         archivePath = self.settings["atlas archive path"]
 
@@ -436,7 +436,7 @@ update  atlas_exposures set local_data = 0 where floor(mjd) in (%(mjdString)s) a
             dbConn=self.atlasMoversDBConn
         )
 
-        self.log.info('completed the ``_remove_processed_data`` method')
+        self.log.debug('completed the ``_remove_processed_data`` method')
         return None
 
     def _update_day_tracker_table(
@@ -462,7 +462,7 @@ update  atlas_exposures set local_data = 0 where floor(mjd) in (%(mjdString)s) a
                 usage code 
 
         """
-        self.log.info('starting the ``_update_day_tracker_table`` method')
+        self.log.debug('starting the ``_update_day_tracker_table`` method')
 
         # YESTERDAY MJD
         mjd = now(
@@ -510,7 +510,7 @@ update  atlas_exposures set local_data = 0 where floor(mjd) in (%(mjdString)s) a
 
         self.atlasMoversDBConn.commit()
 
-        self.log.info('completed the ``_update_day_tracker_table`` method')
+        self.log.debug('completed the ``_update_day_tracker_table`` method')
         return None
 
     # use the tab-trigger below for new method

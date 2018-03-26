@@ -100,7 +100,7 @@ class pyephemPositions():
         **Return:**
             - ``None``
         """
-        self.log.info('starting the ``get`` method')
+        self.log.debug('starting the ``get`` method')
 
         global xephemOE
         global tileSide
@@ -146,7 +146,7 @@ class pyephemPositions():
             if singleSnapshot:
                 snapshotsRequired = 0
 
-        self.log.info('completed the ``get`` method')
+        self.log.debug('completed the ``get`` method')
         return None
 
     def _get_exposures_requiring_pyephem_positions(
@@ -157,7 +157,7 @@ class pyephemPositions():
         **Key Arguments:**
             -  ``concurrentSnapshots`` -- number of concurrent PyEphem snapshots to process
         """
-        self.log.info(
+        self.log.debug(
             'starting the ``_get_exposures_requiring_pyephem_positions`` method')
 
         if self.dev_flag == True:
@@ -196,7 +196,7 @@ class pyephemPositions():
             )
             exposures.append(list(theseExps))
 
-        self.log.info(
+        self.log.debug(
             'completed the ``_get_exposures_requiring_pyephem_positions`` method')
         return nextMjds, exposures, snapshotsRequired
 
@@ -208,7 +208,7 @@ class pyephemPositions():
         **Key Arguments:**
             - ``matchedObjects`` -- these objects matched in the neighbourhood of the ATLAS exposures (list of dictionaries)
         """
-        self.log.info(
+        self.log.debug(
             'starting the ``_add_matched_objects_to_database`` method')
 
         print "Adding the matched sources to the `pyephem_positions` database table"
@@ -231,7 +231,7 @@ class pyephemPositions():
             dbSettings=dbSettings
         )
 
-        self.log.info(
+        self.log.debug(
             'completed the ``_add_matched_objects_to_database`` method')
         return None
 
@@ -243,7 +243,7 @@ class pyephemPositions():
         **Key Arguments:**
             - ``exposures`` -- the atlas exposure to update the database flags for
         """
-        self.log.info('starting the ``_update_database_flag`` method')
+        self.log.debug('starting the ``_update_database_flag`` method')
 
         allExposures = []
         for e in exposures:
@@ -270,7 +270,7 @@ class pyephemPositions():
             dbConn=self.atlasMoversDBConn,
         )
 
-        self.log.info('completed the ``_update_database_flag`` method')
+        self.log.debug('completed the ``_update_database_flag`` method')
         return None
 
     def _get_xephem_orbital_elements(
@@ -280,7 +280,7 @@ class pyephemPositions():
         **Key Arguments:**
             - ``xephemOE`` -- a list of xephem database format strings for use with pyephem
         """
-        self.log.info('starting the ``_get_xephem_orbital_elements`` method')
+        self.log.debug('starting the ``_get_xephem_orbital_elements`` method')
 
         print "Getting the XEphem orbital element strings from the database"
 
@@ -296,7 +296,7 @@ class pyephemPositions():
 
         xephemOE = list(rows)
 
-        self.log.info('completed the ``_get_xephem_orbital_elements`` method')
+        self.log.debug('completed the ``_get_xephem_orbital_elements`` method')
         return xephemOE
 
     def _match_pyephem_snapshot_to_atlas_exposures(
@@ -314,7 +314,7 @@ class pyephemPositions():
         **Return:**
             - ``matchedObjects`` -- these objects matched in the neighbourhood of the ATLAS exposures (list of dictionaries)
         """
-        self.log.info(
+        self.log.debug(
             'starting the ``_match_pyephem_snapshot_to_atlas_exposures`` method')
 
         global DEG_TO_RAD_FACTOR
@@ -359,7 +359,7 @@ class pyephemPositions():
         for r in results:
             matchedObjects += r
 
-        self.log.info(
+        self.log.debug(
             'completed the ``_match_pyephem_snapshot_to_atlas_exposures`` method')
         return matchedObjects
 
@@ -377,7 +377,7 @@ def _generate_pyephem_snapshot(
     **Return:**
         - ``pyephemDB`` -- the pyephem solar-system snapshot database
     """
-    log.info('starting the ``_generate_pyephem_snapshot`` method')
+    log.debug('starting the ``_generate_pyephem_snapshot`` method')
 
     print "generating pyephem database for MJD %(mjd)s" % locals()
 
@@ -421,7 +421,7 @@ def _generate_pyephem_snapshot(
         pyephemDB["healpix"].append(hp.ang2pix(
             nside, theta=thisRa, phi=thisDec, lonlat=True))
 
-    log.info('completed the ``_generate_pyephem_snapshot`` method')
+    log.debug('completed the ``_generate_pyephem_snapshot`` method')
     return pyephemDB
 
 
@@ -447,7 +447,7 @@ def _match_single_exposure_against_pyephem_db(
 
             usage code            
     """
-    log.info('starting the ``_match_single_exposure_against_pyephem_db`` function')
+    log.debug('starting the ``_match_single_exposure_against_pyephem_db`` function')
 
     global tileSide
     global magLimit
@@ -503,7 +503,7 @@ def _match_single_exposure_against_pyephem_db(
                 d2["expname"] = expId
                 matchedObjects.append(d2)
 
-    log.info('completed the ``_match_single_exposure_against_pyephem_db`` function')
+    log.debug('completed the ``_match_single_exposure_against_pyephem_db`` function')
     return matchedObjects
 
 # use the tab-trigger below for new function
