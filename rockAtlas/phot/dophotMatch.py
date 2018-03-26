@@ -415,6 +415,7 @@ def _extract_phot_from_exposure(
         # print ra[m1], dec[m1], " -> ", s * 3600., " arcsec -> ",
         # raOrb[m2], decOrb[m2]
         dList = dophotLines[m1].split()
+        print dList
         dDict = {
             "ra_deg": dList[0],
             "dec_deg": dList[1],
@@ -439,6 +440,7 @@ def _extract_phot_from_exposure(
             "expname": expId
         }
         dophotRows.append(dDict)
+        print "OK"
 
     # FREE MEMORY
     dophotLines = None
