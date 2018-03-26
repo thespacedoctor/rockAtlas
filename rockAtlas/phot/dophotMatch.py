@@ -276,9 +276,7 @@ def _extract_phot_from_exposure(
 
     global exposureIds
 
-    print "HERE"
     expId = exposureIds[expIdIndex]
-    print "HERE2"
 
     # SETUP A DATABASE CONNECTION FOR THE remote database
     host = settings["database settings"]["atlasMovers"]["host"]
@@ -338,15 +336,19 @@ def _extract_phot_from_exposure(
 
     ra = []
     dec = []
+    print "HERE"
     dophotLines = dophotData.split("\n")[1:]
+    print "HERE2"
 
     # FREE MEMORY
     dophotData = None
+    print "HERE3"
     for r in dophotLines:
         r = r.split()
         if len(r):
             ra.append(float(r[0]))
             dec.append(float(r[1]))
+    print "HERE4"
 
     ra = np.array(ra)
     dec = np.array(dec)
