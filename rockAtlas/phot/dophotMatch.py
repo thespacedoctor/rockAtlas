@@ -382,6 +382,7 @@ def _extract_phot_from_exposure(
         )
 
     potSources = len(orbFitRows)
+    print potSources
 
     raOrb = []
     raOrb[:] = [r["ra_deg"] for r in orbFitRows]
