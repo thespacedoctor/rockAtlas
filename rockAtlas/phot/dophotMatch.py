@@ -336,19 +336,15 @@ def _extract_phot_from_exposure(
 
     ra = []
     dec = []
-    print "HERE"
     dophotLines = dophotData.split("\n")[1:]
-    print "HERE2"
 
     # FREE MEMORY
     dophotData = None
-    print "HERE3"
     for r in dophotLines:
         r = r.split()
         if len(r):
             ra.append(float(r[0]))
             dec.append(float(r[1]))
-    print "HERE4"
 
     ra = np.array(ra)
     dec = np.array(dec)
@@ -415,32 +411,38 @@ def _extract_phot_from_exposure(
         # print ra[m1], dec[m1], " -> ", s * 3600., " arcsec -> ",
         # raOrb[m2], decOrb[m2]
         dList = dophotLines[m1].split()
-        print dList
-        dDict = {
-            "ra_deg": dList[0],
-            "dec_deg": dList[1],
-            "m": dList[2],
-            "idx": dList[3],
-            "type": dList[4],
-            "xtsk": dList[5],
-            "ytsk": dList[6],
-            "fitmag": dList[7],
-            "dfitmag": dList[8],
-            "sky": dList[9],
-            "major": dList[10],
-            "minor": dList[11],
-            "phi": dList[12],
-            "probgal": dList[13],
-            "apmag": dList[14],
-            "dapmag": dList[15],
-            "apsky": dList[16],
-            "ap_fit": dList[17],
-            "orbfit_separation_arcsec": s * 3600.,
-            "orbfit_postions_id": orbFitRows[m2]["primaryId"],
-            "expname": expId
-        }
-        dophotRows.append(dDict)
-        print "OK"
+        try:
+            dDict = {
+                "ra_deg": dList[0],
+                "dec_deg": dList[1],
+                "m": dList[2],
+                "idx": dList[3],
+                "type": dList[4],
+                "xtsk": dList[5],
+                "ytsk": dList[6],
+                "fitmag": dList[7],
+                "dfitmag": dList[8],
+                "sky": dList[9],
+                "major": dList[10],
+                "minor": dList[11],
+                "phi": dList[12],
+                "probgal": dList[13],
+                "apmag": dList[14],
+                "dapmag": dList[15],
+                "apsky": dList[16],
+                "ap_fit": dList[17],
+                "orbfit_separation_arcsec": s * 3600.,
+                "orbfit_postions_id": orbFitRows[m2]["primaryId"],
+                "expname": expId
+            }
+            dophotRows.append(dDict)
+        except:
+            dDict = {
+                "expname": expId,
+                "orbfit_postions_id": orbFitRows[m2]["primaryId"],
+                "orbfit_separation_arcsec": s * 3600.
+            }
+            dophotRows.append(dDict)
 
     # FREE MEMORY
     dophotLines = None
