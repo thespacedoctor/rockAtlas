@@ -65,6 +65,8 @@ def _download_one_night_of_atlas_data(
             if not os.path.exists(baseFolderPath):
                 os.makedirs(baseFolderPath)
             print 'MJD %(mjd)s data: %(stderr)s' % locals()
+        elif "Permission denied" in stderr:
+            print 'error in rsyncing MJD %(mjd)s data: %(stderr)s' % locals()
         else:
             print 'error in rsyncing MJD %(mjd)s data: %(stderr)s' % locals()
             return None
@@ -80,6 +82,8 @@ def _download_one_night_of_atlas_data(
             if not os.path.exists(baseFolderPath):
                 os.makedirs(baseFolderPath)
             print 'MJD %(mjd)s data: %(stderr)s' % locals()
+        elif "Permission denied" in stderr:
+            print 'error in rsyncing MJD %(mjd)s data: %(stderr)s' % locals()
         else:
             print 'error in rsyncing MJD %(mjd)s data: %(stderr)s' % locals()
             return None
