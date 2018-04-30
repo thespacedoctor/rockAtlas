@@ -18,6 +18,7 @@ install_requires = [
     'astrocalc',
     'pyephem',
     'healpy'
+    'scipy'
 ]
 
 # READ THE DOCS SERVERS
