@@ -119,7 +119,7 @@ class phase_curve():
             batchSize = 1000
             while len(objects) > 0:
 
-                print "%(remaining)s asteroid still need to have their phase-curve parameters updated" % locals()
+                print "%(remaining)s asteroids still need to have their phase-curve parameters updated in the %(fil)s-band" % locals()
                 objects = self.get_objects(filter=fil, batchSize=batchSize)
                 remaining -= batchSize
 
