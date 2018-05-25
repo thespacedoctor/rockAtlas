@@ -12,6 +12,7 @@ Usage:
     rockAtlas cache <days>
     rockAtlas dophot
     rockAtlas cycle <days>
+    rockAtlas phasecurves
 
 Commands:
     bookkeeping           update and clean database tables, perform essential bookkeeping tasks
@@ -21,6 +22,7 @@ Commands:
     cache                 download a cache of ATLAS dophot data to chew on (cache limit set in settings file)
     dophot                match the orbfit generated positions against the dophot recorded postions (for locally cached files)
     cycle                 cycle through the moving objects database, downloading a few nights data, generate pyephem positions, generate orbfit positions, match dophots file ... and repeat
+    phasecurves           walk through database and update all asteroid phasecurve parameters in the atlas_objects database table
 
 
 Options:
@@ -241,6 +243,17 @@ select mjd from day_tracker where processed = 0 %(o)s) as a;
 
             print "%d seconds to extract dophot measurements\n" % (time.time() - start_time,)
             start_time = time.time()
+
+    if phasecurves:
+        from rockAtlas.enhance import phase_curve
+        pc = phase_curve(
+            log=log,
+            settings=settings
+        )
+        print "Refreshing the asteroid photometry stats before updating phase-curve parameters"
+        # pc.update_atlas_object_table()
+        print "updating phase-curve parameters"
+        pc.calculate()
 
     if "dbConn" in locals() and dbConn:
         dbConn.commit()
