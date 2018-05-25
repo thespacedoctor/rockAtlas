@@ -35,7 +35,7 @@ class phase_curve():
 
     **Usage:**
 
-        To setup your logger, settings and database connections, please use the ``fundamentals`` package (`see tutorial here <http://fundamentals.readthedocs.io/en/latest/#tutorial>`_). 
+        To setup your logger, settings and database connections, please use the ``fundamentals`` package (`see tutorial here <http://fundamentals.readthedocs.io/en/latest/#tutorial>`_).
 
         To initiate a phase_curve object, use the following:
 
@@ -47,9 +47,9 @@ class phase_curve():
             - add a tutorial about ``phase_curve`` to documentation
             - create a blog post about what ``phase_curve`` does
 
-        .. code-block:: python 
+        .. code-block:: python
 
-            usage code   
+            usage code
     """
     # Initialisation
     # 1. @flagged: what are the unique attrributes for each object? Add them
@@ -105,39 +105,42 @@ class phase_curve():
                 - write a command-line tool for this method
                 - update package tutorial with command-line tool info if needed
 
-            .. code-block:: python 
+            .. code-block:: python
 
-                usage code 
+                usage code
 
         """
         self.log.debug('starting the ``calculate`` method')
 
-        remaining = self.count_phase_curves_remaining(filter='c')
-        objects = [1]
-        batchSize = 1000
-        while len(objects) > 0:
+        for fil in ['o', 'c']:
 
-            print "%(remaining)s asteroid still need to have their phase-curve parameters updated" % locals()
-            objects = self.get_objects(filter='c', batchSize=batchSize)
-            remaining -= batchSize
+            remaining = self.count_phase_curves_remaining(filter=fil)
+            objects = [1]
+            batchSize = 1000
+            while len(objects) > 0:
 
-            # DEFINE AN INPUT ARRAY
-            results = fmultiprocess(log=self.log, function=self.calculate_phase_curve_parameters,
-                                    inputArray=objects, poolSize=False, timeout=300, filter='c')
+                print "%(remaining)s asteroid still need to have their phase-curve parameters updated" % locals()
+                objects = self.get_objects(filter=fil, batchSize=batchSize)
+                remaining -= batchSize
 
-            # USE dbSettings TO ACTIVATE MULTIPROCESSING
-            insert_list_of_dictionaries_into_database_tables(
-                dbConn=self.atlasMoversDBConn,
-                log=self.log,
-                dictList=results,
-                dbTableName="atlas_objects",
-                uniqueKeyList=["orbital_elements_id"],
-                dateModified=True,
-                dateCreated=False,
-                batchSize=20000,
-                replace=True,
-                dbSettings=self.settings["database settings"]["atlasMovers"]
-            )
+                # DEFINE AN INPUT ARRAY
+                results = fmultiprocess(log=self.log, function=self.calculate_phase_curve_parameters,
+                                        inputArray=objects, poolSize=False, timeout=300, filter=fil)
+
+                # USE dbSettings TO ACTIVATE MULTIPROCESSING
+                insert_list_of_dictionaries_into_database_tables(
+                    dbConn=self.atlasMoversDBConn,
+                    log=self.log,
+                    dictList=results,
+                    dbTableName="atlas_objects",
+                    uniqueKeyList=["orbital_elements_id"],
+                    dateModified=True,
+                    dateCreated=False,
+                    batchSize=20000,
+                    replace=True,
+                    dbSettings=self.settings[
+                        "database settings"]["atlasMovers"]
+                )
 
         self.log.debug('completed the ``calculate`` method')
         return None
@@ -159,13 +162,13 @@ class phase_curve():
             - create cl-util for this method
             - update the package tutorial if needed
 
-        .. code-block:: python 
+        .. code-block:: python
 
-            usage code 
+            usage code
         """
         self.log.debug('starting the ``get`` method')
 
-        orbital_element_ids = self.get_objects()
+        orbital_elements_ids = self.get_objects()
 
         self.log.debug('completed the ``get`` method')
         return phase_curve
@@ -181,7 +184,7 @@ class phase_curve():
             - ``batchSize`` -- the maximum number of sources to return at a time. Default *1000*
 
         **Return:**
-            - ``orbital_element_ids`` -- a list of the object orbital element database IDs for which phase curve info needs updated
+            - ``orbital_elements_ids`` -- a list of the object orbital element database IDs for which phase curve info needs updated
 
 
         **Usage:**
@@ -192,9 +195,9 @@ class phase_curve():
                 - write a command-line tool for this method
                 - update package tutorial with command-line tool info if needed
 
-            .. code-block:: python 
+            .. code-block:: python
 
-                usage code 
+                usage code
 
         """
         self.log.debug('starting the ``get_objects`` method')
@@ -209,21 +212,21 @@ class phase_curve():
             quiet=False
         )
 
-        orbital_element_ids = []
-        orbital_element_ids[:] = [r["orbital_elements_id"] for r in rows]
+        orbital_elements_ids = []
+        orbital_elements_ids[:] = [r["orbital_elements_id"] for r in rows]
 
         self.log.debug('completed the ``get_objects`` method')
-        return orbital_element_ids
+        return orbital_elements_ids
 
     # use the tab-trigger below for new method
     def calculate_phase_curve_parameters(
             self,
-            orbital_element_id,
+            orbital_elements_id,
             filter):
         """*calculate phase curve parameters*
 
         **Key Arguments:**
-            - ``orbital_element_id`` -- the orbital element ID to calculate phase curve parameters for.
+            - ``orbital_elements_id`` -- the orbital element ID to calculate phase curve parameters for.
             - ``filter`` -- the passband of the photometry to return
 
         **Return:**
@@ -237,9 +240,9 @@ class phase_curve():
                 - write a command-line tool for this method
                 - update package tutorial with command-line tool info if needed
 
-            .. code-block:: python 
+            .. code-block:: python
 
-                usage code 
+                usage code
 
         """
         self.log.debug(
@@ -255,7 +258,7 @@ class phase_curve():
 
         # GRAB ASTEROID MAGS WITH OUTLIERS CLIPPED
         sqlQuery = u"""
-            select * from (SELECT 
+            select * from (SELECT
         (m - o.apparent_mag) as magDiff, phase_angle, m - 5*log10(heliocentric_distance*observer_distance) as reduced_mag, m, dfitmag as err, a.mjd, o.mpc_number, o.object_name, o.orbital_elements_id
     FROM
         dophot_photometry d,
@@ -265,10 +268,10 @@ WHERE
         filter = '%(filter)s'
             AND d.orbfit_postions_id = o.primaryId
             AND a.expname = d.expname
-            AND o.orbital_elements_id = %(orbital_element_id)s
+            AND o.orbital_elements_id = %(orbital_elements_id)s
             AND sep_rank = 1
             AND dfitmag != 0) as a
-INNER JOIN (SELECT 
+INNER JOIN (SELECT
         AVG(m - o.apparent_mag) as avrg, STDDEV(m - o.apparent_mag) as stdv
     FROM
         dophot_photometry d,
@@ -278,7 +281,7 @@ INNER JOIN (SELECT
         filter = '%(filter)s'
             AND d.orbfit_postions_id = o.primaryId
             AND a.expname = d.expname
-            AND o.orbital_elements_id = %(orbital_element_id)s
+            AND o.orbital_elements_id = %(orbital_elements_id)s
             AND sep_rank = 1
             AND dfitmag != 0) as b
 on a.magDiff BETWEEN b.avrg-2*b.stdv AND b.avrg+2*b.stdv;
@@ -291,41 +294,44 @@ on a.magDiff BETWEEN b.avrg-2*b.stdv AND b.avrg+2*b.stdv;
             quiet=False
         )
 
-        name = rows[0]["object_name"]
-        orbital_elements_id = rows[0]["orbital_elements_id"]
-        x = np.array([r["phase_angle"] for r in rows])
-        y = np.array([r["reduced_mag"] for r in rows])
-        yerr = np.array([r["err"] for r in rows])
-        mjds = [r["mjd"] for r in rows]
-        maxmjd = max(mjds)
+        if len(rows) == 0:
+            H = None
+            G = None
+            Herr = None
+            Gerr = None
+        else:
+            name = rows[0]["object_name"]
+            x = np.array([r["phase_angle"] for r in rows])
+            y = np.array([r["reduced_mag"] for r in rows])
+            yerr = np.array([r["err"] for r in rows])
+            mjds = [r["mjd"] for r in rows]
+            maxmjd = max(mjds)
 
-        # print orbital_elements_id
+            # PHASE CURVE FITTING
+            # FIRST PERFORM HELIOCENTRIC CORRECTION -- THIS HAS BEEN DONE WITHIN THE DATABASE QUERY
+            # CONVERT PHASE ANGLE TO RADIANS
+            phase_radians = np.radians(x)
 
-        # PHASE CURVE FITTING
-        # FIRST PERFORM HELIOCENTRIC CORRECTION -- THIS HAS BEEN DONE WITHIN THE DATABASE QUERY
-        # CONVERT PHASE ANGLE TO RADIANS
-        phase_radians = np.radians(x)
+            y = np.array(y)
+            # Fit the H, G function to sparsely sampled photometry
+            try:
+                popt, pcov = curve_fit(magnitude_phase_func,
+                                       phase_radians, y, sigma=yerr, absolute_sigma=True)
+                perr = np.sqrt(np.diag(pcov))
+            except:
+                self.log.warning(
+                    "Could not determine phase-curve parameters for %(name)s - what went wrong?" % locals())
+                popt = [None, None]
+                perr = [None, None]
 
-        y = np.array(y)
-        # Fit the H, G function to sparsely sampled photometry
-        try:
-            popt, pcov = curve_fit(magnitude_phase_func,
-                                   phase_radians, y, sigma=yerr, absolute_sigma=True)
-            perr = np.sqrt(np.diag(pcov))
-        except:
-            self.log.warning(
-                "Could not determine phase-curve parameters for %(name)s - what went wrong?" % locals())
-            popt = [None, None]
-            perr = [None, None]
+            if popt[1] == 1.:
+                popt = [None, None]
+                perr = [None, None]
 
-        if popt[1] == 1.:
-            popt = [None, None]
-            perr = [None, None]
-
-        H = popt[0]
-        G = popt[1]
-        Herr = perr[0]
-        Gerr = perr[1]
+            H = popt[0]
+            G = popt[1]
+            Herr = perr[0]
+            Gerr = perr[1]
 
         now = datetime.now()
         now = now.strftime("%Y-%m-%d %H:%M:%S")
