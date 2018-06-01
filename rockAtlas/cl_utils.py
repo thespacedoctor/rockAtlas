@@ -251,7 +251,7 @@ select mjd from day_tracker where processed = 0 %(o)s) as a;
             settings=settings
         )
         print "Refreshing the asteroid photometry stats before updating phase-curve parameters"
-        # pc.update_atlas_object_table()
+        pc.update_atlas_object_table()
         print "updating phase-curve parameters"
         pc.calculate()
 

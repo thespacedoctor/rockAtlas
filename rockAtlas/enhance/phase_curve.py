@@ -314,9 +314,12 @@ on a.magDiff BETWEEN b.avrg-2*b.stdv AND b.avrg+2*b.stdv;
 
             y = np.array(y)
             # Fit the H, G function to sparsely sampled photometry
+            # SET UP INITIAL ESTIMATES
+            Ho_est = min(y)
+            G_est = 0.5
             try:
                 popt, pcov = curve_fit(magnitude_phase_func,
-                                       phase_radians, y, sigma=yerr, absolute_sigma=True)
+                                       phase_radians, y, p0=[Ho_est, G_est], sigma=yerr, absolute_sigma=False)
                 perr = np.sqrt(np.diag(pcov))
             except:
                 self.log.warning(
