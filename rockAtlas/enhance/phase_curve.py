@@ -203,7 +203,7 @@ class phase_curve():
         self.log.debug('starting the ``get_objects`` method')
 
         sqlQuery = u"""
-            SELECT orbital_elements_id FROM atlas_objects where detection_count_%(filter)s > 1 and  (phase_curve_refresh_date_%(filter)s is null or last_photometry_update_date_%(filter)s > phase_curve_refresh_date_%(filter)s) limit %(batchSize)s;
+            SELECT orbital_elements_id FROM atlas_objects where detection_count_%(filter)s > 10 and  (phase_curve_refresh_date_%(filter)s is null or last_photometry_update_date_%(filter)s > phase_curve_refresh_date_%(filter)s) limit %(batchSize)s;
         """ % locals()
         rows = readquery(
             log=self.log,
@@ -418,7 +418,7 @@ on a.magDiff BETWEEN b.avrg-2*b.stdv AND b.avrg+2*b.stdv;
         self.log.debug('starting the ``count_phase_curves_remaining`` method')
 
         sqlQuery = u"""
-            SELECT count(*) as count FROM atlas_objects where detection_count_%(filter)s > 1 and  (phase_curve_refresh_date_%(filter)s is null or last_photometry_update_date_%(filter)s > phase_curve_refresh_date_%(filter)s);
+            SELECT count(*) as count FROM atlas_objects where detection_count_%(filter)s > 10 and  (phase_curve_refresh_date_%(filter)s is null or last_photometry_update_date_%(filter)s > phase_curve_refresh_date_%(filter)s);
         """ % locals()
         rows = readquery(
             log=self.log,
