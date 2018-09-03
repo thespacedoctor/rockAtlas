@@ -200,6 +200,11 @@ class astorb():
                 if v != None and len(v) == 0:
                     d[k] = None
 
+            d["q_perihelion_distance"] = float(
+                d["a_semimajor_axis"]) * (1 - float(d["e_eccentricity"]))
+            d["Q_aphelion_distance"] = float(
+                d["a_semimajor_axis"]) * (1 + float(d["e_eccentricity"]))
+
             astorbDictList.append(d)
 
         print "Finshed parsing the astorb.dat orbital elements file"
