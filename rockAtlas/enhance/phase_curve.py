@@ -88,11 +88,12 @@ class phase_curve():
 
     # use the tab-trigger below for new method
     def calculate(
-            self):
+            self,
+            objectid=False):
         """*calculate the phase curve parameters for all objects in the database with new photometry*
 
         **Key Arguments:**
-            # -
+            - ``objectid`` -- the ID of an individual SSObject to update. Default *False*
 
         **Return:**
             - None
@@ -114,33 +115,38 @@ class phase_curve():
 
         for fil in ['o', 'c']:
 
-            remaining = self.count_phase_curves_remaining(filter=fil)
+            remaining = self.count_phase_curves_remaining(
+                filter=fil, objectid=objectid)
             objects = [1]
             batchSize = 1000
             while len(objects) > 0:
 
                 print "%(remaining)s asteroids still need to have their phase-curve parameters updated in the %(fil)s-band" % locals()
-                objects = self.get_objects(filter=fil, batchSize=batchSize)
+                objects = self.get_objects(
+                    filter=fil, batchSize=batchSize, objectid=objectid)
                 remaining -= batchSize
 
                 # DEFINE AN INPUT ARRAY
                 results = fmultiprocess(log=self.log, function=self.calculate_phase_curve_parameters,
                                         inputArray=objects, poolSize=False, timeout=300, filter=fil)
 
-                # USE dbSettings TO ACTIVATE MULTIPROCESSING
-                insert_list_of_dictionaries_into_database_tables(
-                    dbConn=self.atlasMoversDBConn,
-                    log=self.log,
-                    dictList=results,
-                    dbTableName="atlas_objects",
-                    uniqueKeyList=["orbital_elements_id"],
-                    dateModified=True,
-                    dateCreated=False,
-                    batchSize=20000,
-                    replace=True,
-                    dbSettings=self.settings[
-                        "database settings"]["atlasMovers"]
-                )
+                if len(results):
+                    # USE dbSettings TO ACTIVATE MULTIPROCESSING
+                    insert_list_of_dictionaries_into_database_tables(
+                        dbConn=self.atlasMoversDBConn,
+                        log=self.log,
+                        dictList=results,
+                        dbTableName="atlas_objects",
+                        uniqueKeyList=["orbital_elements_id"],
+                        dateModified=True,
+                        dateCreated=False,
+                        batchSize=20000,
+                        replace=True,
+                        dbSettings=self.settings[
+                            "database settings"]["atlasMovers"]
+                    )
+                if objectid:
+                    objects = []
 
         self.log.debug('completed the ``calculate`` method')
         return None
@@ -176,12 +182,14 @@ class phase_curve():
     def get_objects(
             self,
             filter,
-            batchSize=1000):
+            batchSize=1000,
+            objectid=False):
         """*get the ids of the moving objects that require phase curve parameter updates from the database*
 
         **Key Arguments:**
             - ``filter`` -- the passband of the photometry to return
             - ``batchSize`` -- the maximum number of sources to return at a time. Default *1000*
+            - ``objectid`` -- the ID of an individual SSObject to update. Default *False*
 
         **Return:**
             - ``orbital_elements_ids`` -- a list of the object orbital element database IDs for which phase curve info needs updated
@@ -202,8 +210,17 @@ class phase_curve():
         """
         self.log.debug('starting the ``get_objects`` method')
 
+        if objectid:
+            try:
+                objectid = int(objectid)
+                whereclause = "mpc_number = %(objectid)s" % locals()
+            except:
+                whereclause = 'name = "%(objectid)s"' % locals()
+        else:
+            whereclause = "detection_count_%(filter)s > 50 and  (phase_curve_refresh_date_%(filter)s is null or last_photometry_update_date_%(filter)s > phase_curve_refresh_date_%(filter)s)" % locals()
+
         sqlQuery = u"""
-            SELECT orbital_elements_id FROM atlas_objects where detection_count_%(filter)s > 10 and  (phase_curve_refresh_date_%(filter)s is null or last_photometry_update_date_%(filter)s > phase_curve_refresh_date_%(filter)s) limit %(batchSize)s;
+            SELECT orbital_elements_id FROM atlas_objects where %(whereclause)s limit %(batchSize)s;
         """ % locals()
         rows = readquery(
             log=self.log,
@@ -311,15 +328,17 @@ on a.magDiff BETWEEN b.avrg-2*b.stdv AND b.avrg+2*b.stdv;
             # FIRST PERFORM HELIOCENTRIC CORRECTION -- THIS HAS BEEN DONE WITHIN THE DATABASE QUERY
             # CONVERT PHASE ANGLE TO RADIANS
             phase_radians = np.radians(x)
-
             y = np.array(y)
             # Fit the H, G function to sparsely sampled photometry
             # SET UP INITIAL ESTIMATES
             Ho_est = min(y)
             G_est = 0.5
+            popt, pcov = curve_fit(magnitude_phase_func,
+                                   phase_radians, y, p0=[Ho_est, G_est])
+            perr = np.sqrt(np.diag(pcov))
             try:
                 popt, pcov = curve_fit(magnitude_phase_func,
-                                       phase_radians, y, p0=[Ho_est, G_est], sigma=yerr, absolute_sigma=False)
+                                       phase_radians, y, p0=[Ho_est, G_est])
                 perr = np.sqrt(np.diag(pcov))
             except:
                 self.log.warning(
@@ -336,6 +355,8 @@ on a.magDiff BETWEEN b.avrg-2*b.stdv AND b.avrg+2*b.stdv;
             Herr = perr[0]
             Gerr = perr[1]
 
+        print "FILTER: %(filter)s, H: %(H)s, G: %(G)s" % locals()
+
         now = datetime.now()
         now = now.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -350,7 +371,6 @@ on a.magDiff BETWEEN b.avrg-2*b.stdv AND b.avrg+2*b.stdv;
 
         return results
 
-    # use the tab-trigger below for new method
     def update_atlas_object_table(
             self):
         """*update atlas object table*
@@ -392,12 +412,14 @@ on a.magDiff BETWEEN b.avrg-2*b.stdv AND b.avrg+2*b.stdv;
     # use the tab-trigger below for new method
     def count_phase_curves_remaining(
             self,
-            filter):
+            filter,
+            objectid=False):
         """*count phase curves remaining*
 
         **Key Arguments:**
             - ``filter`` -- the passband of the photometry to return
             - ``count`` -- the number of asteroids still requiring phase-curve parameter updates
+            - ``objectid`` -- the ID of an individual SSObject to update. Default *False*
 
         **Return:**
             - None
@@ -417,8 +439,17 @@ on a.magDiff BETWEEN b.avrg-2*b.stdv AND b.avrg+2*b.stdv;
         """
         self.log.debug('starting the ``count_phase_curves_remaining`` method')
 
+        if objectid:
+            try:
+                objectid = int(objectid)
+                whereclause = "mpc_number = %(objectid)s" % locals()
+            except:
+                whereclause = 'name = "%(objectid)s"' % locals()
+        else:
+            whereclause = "detection_count_%(filter)s > 50 and  (phase_curve_refresh_date_%(filter)s is null or last_photometry_update_date_%(filter)s > phase_curve_refresh_date_%(filter)s)" % locals()
+
         sqlQuery = u"""
-            SELECT count(*) as count FROM atlas_objects where detection_count_%(filter)s > 10 and  (phase_curve_refresh_date_%(filter)s is null or last_photometry_update_date_%(filter)s > phase_curve_refresh_date_%(filter)s);
+            SELECT count(*) as count FROM atlas_objects where %(whereclause)s;
         """ % locals()
         rows = readquery(
             log=self.log,

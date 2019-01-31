@@ -7,16 +7,18 @@ Usage:
     rockAtlas init
     rockAtlas bookkeeping [-f] [-s <pathToSettingsFile>]
     rockAtlas astorb
+    rockAtlas proper (import | plot)
     rockAtlas pyephem [-o]
     rockAtlas orbfit [-o]
     rockAtlas cache <days>
     rockAtlas dophot
     rockAtlas cycle <days>
-    rockAtlas phasecurves
+    rockAtlas phasecurves [<objectid>]
 
 Commands:
     bookkeeping           update and clean database tables, perform essential bookkeeping tasks
     astorb                download astorb.dat orbital elements file and update the orbital elements database table
+    proper                download proper elements from AstDyS and update them in the proper elemetns database table
     pyephem               generate the pyephem positions overlapping the ATLAS exposures in the moving objects database
     orbfit                generate the orbfit positions overlapping the ATLAS exposures in the moving objects database
     cache                 download a cache of ATLAS dophot data to chew on (cache limit set in settings file)
@@ -28,6 +30,7 @@ Commands:
 Options:
     init                  setup the rockAtlas settings file for the first time
     days                  number of days to cache
+    objectid              provide the id of a single SSObject to update phasecurve info for
     -h, --help            show this help message
     -v, --version         show version
     -s, --settings        the settings file
@@ -120,6 +123,23 @@ def main(arguments=None):
             settings=settings
         )
         oe.refresh()
+
+    if proper and iimport:
+        from rockAtlas.orbital_elements import properElements
+        oe = properElements(
+            log=log,
+            settings=settings
+        )
+        oe.refresh()
+
+    if proper and plot:
+        from rockAtlas.plot import proper_element_space
+        oe = proper_element_space(
+            log=log,
+            settings=settings
+        )
+        ssObjectData = oe.get_asteroid_data()
+        oe.plot_asteroids(ssObjectData)
 
     if pyephem:
 
@@ -250,10 +270,10 @@ select mjd from day_tracker where processed = 0 %(o)s) as a;
             log=log,
             settings=settings
         )
-        print "Refreshing the asteroid photometry stats before updating phase-curve parameters"
-        pc.update_atlas_object_table()
+        # print "Refreshing the asteroid photometry stats before updating phase-curve parameters"
+        # pc.update_atlas_object_table()
         print "updating phase-curve parameters"
-        pc.calculate()
+        pc.calculate(objectid)
 
     if "dbConn" in locals() and dbConn:
         dbConn.commit()

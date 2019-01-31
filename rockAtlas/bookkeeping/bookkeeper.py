@@ -191,6 +191,7 @@ class bookkeeper():
                 `mag5sig` as `limiting_magnitude`,
                 `obj` as `atlas_object_id` from atlas_metadataddc where %(recent)s and obj like "TA%%" order by mjd desc;
         """ % locals()
+
         rows = readquery(
             log=self.log,
             sqlQuery=sqlQuery,
