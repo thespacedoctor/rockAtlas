@@ -18,9 +18,8 @@ from fundamentals import tools
 from subprocess import Popen, PIPE, STDOUT
 from fundamentals.mysql import readquery
 from fundamentals import fmultiprocess
-from fundamentals.mysql import writequery
+from fundamentals.mysql import writequery, readquery, insert_list_of_dictionaries_into_database_tables
 from fundamentals.files import recursive_directory_listing
-from fundamentals.mysql import insert_list_of_dictionaries_into_database_tables
 import pymysql as ms
 from rockAtlas.bookkeeping import bookkeeper
 import shutil
@@ -381,13 +380,15 @@ SELECT DISTINCT
 
     def _remove_processed_data(
             self):
-        """*remove processed data*
+        """*Remove cached dophot files that have already been processed from the local drive*
+
+        The data is removed in nightly chunks so the whole night of data will need to having been processed before any of it is removed.
         """
         self.log.debug('starting the ``_remove_processed_data`` method')
 
         archivePath = self.settings["atlas archive path"]
 
-        from fundamentals.mysql import readquery
+        # SELECT OUT THE MJDS WHERE *ALL* DOPHOT DATA HAS BEEN PROCESSED
         sqlQuery = u"""
             select mjd from (SELECT DISTINCT
     FLOOR(mjd) as mjd
@@ -417,6 +418,7 @@ WHERE
         oldMjds = []
         oldMjds[:] = [str(int(o["mjd"])) for o in mjds]
 
+        # FOR EACH MJD LISTED, DELETE ITS DIRECTORIES FROM THE LOCAL DISK
         for m in oldMjds:
             for i in ["01a", "02a"]:
                 datapath = archivePath + "/%(i)s/%(m)s" % locals()
@@ -429,11 +431,12 @@ WHERE
 
         mjdString = (',').join(oldMjds)
 
+        # UPDATE THE BOOKKEEPING day_tracker TABLE AND THE atlas_exposures
+        # TABLE
         sqlQuery = """
 update day_tracker set local_data = 0 where floor(mjd) in (%(mjdString)s);
 update  atlas_exposures set local_data = 0 where floor(mjd) in (%(mjdString)s) and dophot_match != 0;""" % locals(
         )
-        print sqlQuery
         writequery(
             log=self.log,
             sqlQuery=sqlQuery,
@@ -445,26 +448,9 @@ update  atlas_exposures set local_data = 0 where floor(mjd) in (%(mjdString)s) a
 
     def _update_day_tracker_table(
             self):
-        """* update day tracker table*
+        """*update 'day_tracker' database table with all MJD values up to today*
 
-        **Key Arguments:**
-            # -
-
-        **Return:**
-            - None
-
-        **Usage:**
-            ..  todo::
-
-                - add usage info
-                - create a sublime snippet for usage
-                - write a command-line tool for this method
-                - update package tutorial with command-line tool info if needed
-
-            .. code-block:: python 
-
-                usage code 
-
+        This table is used for book-keeping proposes and to make sure we don't try and download tomorrow's data!
         """
         self.log.debug('starting the ``_update_day_tracker_table`` method')
 
@@ -474,6 +460,8 @@ update  atlas_exposures set local_data = 0 where floor(mjd) in (%(mjdString)s) a
         ).get_mjd()
         yesterday = int(math.floor(mjd - 1))
 
+        # FIND THE HIGHEST MJD CURRENTLY RECORDED IN THE DAY TRACKER MYSQL
+        # TABLE
         sqlQuery = u"""
             SELECT mjd FROM atlas_moving_objects.day_tracker order by mjd desc limit 1
         """ % locals()
@@ -488,6 +476,7 @@ update  atlas_exposures set local_data = 0 where floor(mjd) in (%(mjdString)s) a
             log=self.log
         )
 
+        # NOW ADD ALL MISSING MJDS UP TO TODAY
         sqlData = []
         for m in range(highestMjd, yesterday):
             # CONVERTER TO CONVERT MJD TO DATE

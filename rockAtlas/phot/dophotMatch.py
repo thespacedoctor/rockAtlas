@@ -244,7 +244,8 @@ SET
     d.object_name = o.object_name,
     d.orbital_elements_id = o.orbital_elements_id
 WHERE
-    d.orbfit_postions_id = o.primaryId;""" % locals()
+    d.orbfit_postions_id = o.primaryId
+    AND d.orbital_elements_id is null;""" % locals()
         writequery(
             log=self.log,
             sqlQuery=sqlQuery,

@@ -10,10 +10,11 @@
     March 6, 2018
 
 Usage:
-    find_atlas_exposure_containing_ssobject <ssobject>
+    find_atlas_exposure_containing_ssobject [-j] <ssobject>
 
 Options:
     ssobject              the name of the solar-system object to find wihtin ATLAS exposures
+    -j, --jpl             ping JPL to get a complete set of ATLAS exposures covering the astroid postion (otherwise use dophot detection found in database)
     -h, --help            show this help message
     -v, --version         show version
     -s, --settings        the settings file
@@ -47,7 +48,7 @@ def main(arguments=None):
     tileSide = 5.46
 
     i = 0
-    outputList = []
+
     rsyncContent = []
     stampCutter = []
     obscodes = {"02": "T05", "01": "T08"}
@@ -95,6 +96,97 @@ def main(arguments=None):
         log=log,
         dbSettings=dbSettings
     ).connect()
+
+    if jplFlag:
+        outputList = jpl_ephemeris_exposure_match(
+            dbConn=dbConn, log=log, obscodes=obscodes, ssobject=ssobject)
+    else:
+        outputList = get_dophot_positions(
+            dbConn=dbConn, log=log, ssobject=ssobject)
+
+    for r in outputList:
+        thisMjd = int(math.floor(r["mjd"]))
+        expname = r["obs"]
+        expPrefix = expname[:2]
+        ssobject_ = ssobject.replace(" ", "_")
+        raStr = r["raDeg"]
+        decStr = r["decDeg"]
+        stampCutter.append(
+            "pix2sky -sky2pix %(ssobject_)s_atlas_exposures/%(expname)s.fits.fz %(raStr)s %(decStr)s -print0 | xargs -I coords bash -c 'monsta /atlas/src/trunk/red/subarray.pro %(ssobject_)s_atlas_exposures/%(expname)s.fits.fz %(ssobject_)s_atlas_exposures/%(expname)s_stamp.fits coords 200 10560' | xargs" % locals())
+        rsyncContent.append(
+            "rsync -av dyoung@atlas-base-adm01.ifa.hawaii.edu:/atlas/red/%(expPrefix)sa/%(thisMjd)s/%(expname)s.fits.fz %(ssobject_)s_atlas_exposures/" % locals())
+        rsyncContent.append(
+            "touch %(ssobject_)s_atlas_exposures/%(expname)s.location" % locals())
+        rsyncContent.append(
+            'echo "_RAJ2000,_DEJ2000,OBJECT\n%(raStr)s,%(decStr)s,%(ssobject)s" > %(ssobject_)s_atlas_exposures/%(expname)s.location' % locals())
+
+    dataSet = list_of_dictionaries(
+        log=log,
+        listOfDictionaries=outputList,
+        # use re.compile('^[0-9]{4}-[0-9]{2}-[0-9]{2}T') for mysql
+        reDatetime=False
+    )
+
+    ssobject = ssobject.replace(" ", "_")
+    csvData = dataSet.csv(
+        filepath="./%(ssobject)s_atlas_exposure_matches.csv" % locals())
+
+    stampCutter = ("\n").join(stampCutter)
+    pathToWriteFile = "./%(ssobject)s_stamp_cutter.sh" % locals()
+    try:
+        log.debug("attempting to open the file %s" % (pathToWriteFile,))
+        writeFile = codecs.open(pathToWriteFile, encoding='utf-8', mode='w')
+    except IOError, e:
+        message = 'could not open the file %s' % (pathToWriteFile,)
+        log.critical(message)
+        raise IOError(message)
+    writeFile.write(stampCutter)
+    writeFile.close()
+
+    rsyncContent = ("\n").join(rsyncContent)
+    pathToWriteFile = "./%(ssobject)s_atlas_exposure_rsync.sh" % locals()
+    try:
+        log.debug("attempting to open the file %s" % (pathToWriteFile,))
+        writeFile = codecs.open(pathToWriteFile, encoding='utf-8', mode='w')
+    except IOError, e:
+        message = 'could not open the file %s' % (pathToWriteFile,)
+        log.critical(message)
+        raise IOError(message)
+    writeFile.write(rsyncContent)
+    writeFile.close()
+
+    return
+
+
+def jpl_ephemeris_exposure_match(
+        dbConn,
+        log,
+        obscodes,
+        ssobject):
+    """*Generate ephemeris of object for all ATLAS exposures MJDs and then match ephemeris positions to exposure FOVs*
+
+    **Key Arguments:**
+        - ``dbConn`` -- mysql database connection
+        - ``log`` -- logger
+        - ``obscodes`` -- dictionary of observatory codes to generate the ephermides for
+        - ``ssobject`` -- the object to match the exposures against
+
+    **Return:**
+        - ``outputList`` -- the list of matched exposures/object positions
+
+    **Usage:**
+        .. todo::
+
+            add usage info
+            create a sublime snippet for usage
+
+        .. code-block:: python 
+
+            usage code            
+    """
+    log.debug('starting the ``jpl_ephemeris_exposure_match`` function')
+
+    outputList = []
 
     # GRAB THE EXPOSURE LISTING
     for expPrefix, obscode in obscodes.iteritems():
@@ -187,6 +279,14 @@ def main(arguments=None):
 
         print "Finding the exopsures containing the SS object"
 
+        dataSet = list_of_dictionaries(
+            log=log,
+            listOfDictionaries=results
+        )
+        # xfundamentals-render-list-of-dictionaries
+        output = dataSet.table(
+            filepath="./%(obscode)s_%(ssobject)s_ephemeris.dat" % locals())
+
         for e, r in zip(exposureList, results):
             # CALCULATE SEPARATION IN ARCSEC
             if not r:
@@ -249,56 +349,75 @@ def main(arguments=None):
                          "mag": r["apparent_mag"],
                          "sep": sep
                          })
-                    thisMjd = int(math.floor(e["mjd"]))
-                    expname = e["expname"]
-                    ssobject_ = ssobject.replace(" ", "_")
-                    raStr = r["ra_deg"]
-                    decStr = r["dec_deg"]
-                    stampCutter.append(
-                        "pix2sky -sky2pix %(ssobject_)s_atlas_exposures/%(expname)s.fits.fz %(raStr)s %(decStr)s -print0 | xargs -I coords bash -c 'monsta /atlas/src/trunk/red/subarray.pro %(ssobject_)s_atlas_exposures/%(expname)s.fits.fz %(ssobject_)s_atlas_exposures/%(expname)s_stamp.fits coords 200 10560' | xargs" % locals())
-                    rsyncContent.append(
-                        "rsync -av dyoung@atlas-base-adm01.ifa.hawaii.edu:/atlas/red/%(expPrefix)sa/%(thisMjd)s/%(expname)s.fits.fz %(ssobject_)s_atlas_exposures/" % locals())
-                    rsyncContent.append(
-                        "touch %(ssobject_)s_atlas_exposures/%(expname)s.location" % locals())
-                    rsyncContent.append(
-                        'echo "_RAJ2000,_DEJ2000,OBJECT\n%(raStr)s,%(decStr)s,%(ssobject)s" > %(ssobject_)s_atlas_exposures/%(expname)s.location' % locals())
 
-    dataSet = list_of_dictionaries(
+    log.debug('completed the ``jpl_ephemeris_exposure_match`` function')
+    return outputList
+
+# use the tab-trigger below for new function
+
+
+def get_dophot_positions(
+        dbConn,
+        log,
+        ssobject):
+    """*get a list of exposures and the measured dophot positions*
+
+    **Key Arguments:**
+        - ``dbConn`` -- mysql database connection
+        - ``log`` -- logger
+        - ``ssobject`` -- the object to return positons and exposure lists for
+
+    **Return:**
+        - ``outputList`` -- the list of matched exposures/object positions
+
+    **Usage:**
+        .. todo::
+
+            add usage info
+            create a sublime snippet for usage
+
+        .. code-block:: python 
+
+            usage code            
+    """
+    log.debug('starting the ``get_dophot_positions`` function')
+
+    outputList = []
+
+    from fundamentals.mysql import readquery
+
+    # IS OBJECT NAME A STRING OR MPC NUMBER (INT)
+    try:
+        ssobjectQuery = int(ssobject)
+        sqlQuery = u"""
+            select expname, mjd, ra_deg, dec_deg, m as mag from dophot_photometry where orbital_elements_id = "%(ssobject)s";
+        """ % locals()
+    except:
+        sqlQuery = u"""
+            select expname, mjd, ra_deg, dec_deg, m as mag from dophot_photometry where object_name = "%(ssobject)s";
+        """ % locals()
+
+    rows = readquery(
         log=log,
-        listOfDictionaries=outputList,
-        # use re.compile('^[0-9]{4}-[0-9]{2}-[0-9]{2}T') for mysql
-        reDatetime=False
+        sqlQuery=sqlQuery,
+        dbConn=dbConn,
+        quiet=False
     )
+    outputList = []
+    for r in rows:
+        outputList.append(
+            {"obs": r["expname"],
+             "mjd": r["mjd"],
+             "raDeg": r["ra_deg"],
+             "decDeg": r["dec_deg"],
+             "mag": r["mag"]
+             })
 
-    ssobject = ssobject.replace(" ", "_")
-    csvData = dataSet.csv(
-        filepath="./%(ssobject)s_atlas_exposure_matches.csv" % locals())
+    log.debug('completed the ``get_dophot_positions`` function')
+    return outputList
 
-    stampCutter = ("\n").join(stampCutter)
-    pathToWriteFile = "./%(ssobject)s_stamp_cutter.sh" % locals()
-    try:
-        log.debug("attempting to open the file %s" % (pathToWriteFile,))
-        writeFile = codecs.open(pathToWriteFile, encoding='utf-8', mode='w')
-    except IOError, e:
-        message = 'could not open the file %s' % (pathToWriteFile,)
-        log.critical(message)
-        raise IOError(message)
-    writeFile.write(stampCutter)
-    writeFile.close()
-
-    rsyncContent = ("\n").join(rsyncContent)
-    pathToWriteFile = "./%(ssobject)s_atlas_exposure_rsync.sh" % locals()
-    try:
-        log.debug("attempting to open the file %s" % (pathToWriteFile,))
-        writeFile = codecs.open(pathToWriteFile, encoding='utf-8', mode='w')
-    except IOError, e:
-        message = 'could not open the file %s' % (pathToWriteFile,)
-        log.critical(message)
-        raise IOError(message)
-    writeFile.write(rsyncContent)
-    writeFile.close()
-
-    return
+# use the tab-trigger below for new function
+# xt-def-function
 
 if __name__ == '__main__':
     main()
