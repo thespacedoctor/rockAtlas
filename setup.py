@@ -17,7 +17,7 @@ install_requires = [
     'pymysql',
     'astrocalc',
     'pyephem',
-    'healpy'
+    'healpy',
     'scipy'
 ]
 
