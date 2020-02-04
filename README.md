@@ -32,13 +32,13 @@ Command-Line Usage
         -f, --full            a full update (not just recently changed exposures and sources)
         -o, --one             only generate positions for a single pyephem snapshot (few 10s of exposures - useful for testing)
 
-Documentation
+<!--- Documentation
 =============
 
 Documentation for rockAtlas is hosted by [Read the
 Docs](http://rockAtlas.readthedocs.org/en/stable/) (last [stable
 version](http://rockAtlas.readthedocs.org/en/stable/) and [latest
-version](http://rockAtlas.readthedocs.org/en/latest/)).
+version](http://rockAtlas.readthedocs.org/en/latest/)). --->
 
 Installation
 ============
