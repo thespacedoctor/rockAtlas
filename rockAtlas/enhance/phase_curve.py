@@ -332,7 +332,7 @@ on a.magDiff BETWEEN b.avrg-2*b.stdv AND b.avrg+2*b.stdv;
             # Fit the H, G function to sparsely sampled photometry
             # SET UP INITIAL ESTIMATES
             Ho_est = min(y)
-            G_est = 0.5
+            G_est = 0.5 # CHANGE THIS TO 0.15?
             popt, pcov = curve_fit(magnitude_phase_func,
                                    phase_radians, y, p0=[Ho_est, G_est])
             perr = np.sqrt(np.diag(pcov))
@@ -389,9 +389,9 @@ on a.magDiff BETWEEN b.avrg-2*b.stdv AND b.avrg+2*b.stdv;
                 - write a command-line tool for this method
                 - update package tutorial with command-line tool info if needed
 
-            .. code-block:: python 
+            .. code-block:: python
 
-                usage code 
+                usage code
 
         """
         self.log.debug('starting the ``update_atlas_object_table`` method')
@@ -432,9 +432,9 @@ on a.magDiff BETWEEN b.avrg-2*b.stdv AND b.avrg+2*b.stdv;
                 - write a command-line tool for this method
                 - update package tutorial with command-line tool info if needed
 
-            .. code-block:: python 
+            .. code-block:: python
 
-                usage code 
+                usage code
 
         """
         self.log.debug('starting the ``count_phase_curves_remaining`` method')
