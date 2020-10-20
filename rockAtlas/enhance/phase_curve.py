@@ -128,7 +128,7 @@ class phase_curve():
 
                 # DEFINE AN INPUT ARRAY
                 results = fmultiprocess(log=self.log, function=self.calculate_phase_curve_parameters,
-                                        inputArray=objects, poolSize=False, timeout=300, filter=fil)
+                                        inputArray=objects, poolSize=False, timeout=600, filter=fil)
 
                 if len(results):
                     # USE dbSettings TO ACTIVATE MULTIPROCESSING
@@ -333,12 +333,12 @@ on a.magDiff BETWEEN b.avrg-2*b.stdv AND b.avrg+2*b.stdv;
             # SET UP INITIAL ESTIMATES
             Ho_est = min(y)
             G_est = 0.5
-            popt, pcov = curve_fit(magnitude_phase_func,
-                                   phase_radians, y, p0=[Ho_est, G_est])
-            perr = np.sqrt(np.diag(pcov))
+            #popt, pcov = curve_fit(magnitude_phase_func,
+            #                       phase_radians, y, p0=[Ho_est, G_est])
+            #perr = np.sqrt(np.diag(pcov))
             try:
                 popt, pcov = curve_fit(magnitude_phase_func,
-                                       phase_radians, y, p0=[Ho_est, G_est])
+                                       phase_radians, y, p0=[Ho_est, G_est], maxfev = 1000)
                 perr = np.sqrt(np.diag(pcov))
             except:
                 self.log.warning(

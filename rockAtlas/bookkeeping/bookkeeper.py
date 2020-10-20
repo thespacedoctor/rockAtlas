@@ -20,7 +20,6 @@ from HMpTy.mysql import add_htm_ids_to_mysql_database_table
 from astrocalc.times import now as mjdnow
 from fundamentals.mysql import directory_script_runner
 
-
 class bookkeeper():
     """
     *The worker class for the bookkeeper module*
