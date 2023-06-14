@@ -1,6 +1,11 @@
 rockAtlas
 =========
 
+
+[![](https://zenodo.org/badge/108553925.svg)](https://zenodo.org/badge/latestdoi/108553925) 
+
+
+
 [![Documentation Status](https://readthedocs.org/projects/rockAtlas/badge/)](http://rockAtlas.readthedocs.io/en/latest/?badge)
 
 [![Coverage Status](https://cdn.rawgit.com/thespacedoctor/rockAtlas/master/coverage.svg)](https://cdn.rawgit.com/thespacedoctor/rockAtlas/master/htmlcov/index.html)
@@ -108,3 +113,19 @@ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
 CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+## How to cite rockAtlas
+
+If you use `rockAtlas` in your work, please cite using the following BibTeX entry: 
+
+```bibtex
+@software{Young_rockAtlas,
+    author = {Young, David R.},
+    doi = {10.5281/zenodo.8037828},
+    license = {GPL-3.0-only},
+    title = {{rockAtlas}},
+    url = {https://github.com/thespacedoctor/rockAtlas}
+}
+```
+ 
