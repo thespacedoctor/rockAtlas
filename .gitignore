@@ -13,9 +13,7 @@ cover/
 html_test_coverage_report/
 _ignore_*
 build
-*.gem
-*.gemspec
-Gemfile.lock
+
 # Compiled python modules.
 *.pyc
 
@@ -39,7 +37,4 @@ path_to_settings.yaml
 blog-post.md
 blog-post.rst
 setup.py
-/scripts/Kleopatra_atlas_exposure_rsync.sh
-/scripts/Kleopatra_stamp_cutter.sh
-/scripts/Kleopatra_atlas_exposures
-/scripts/Kleopatra_atlas_exposure_matches.csv
+/scripts

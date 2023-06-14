@@ -1,12 +1,16 @@
 rockAtlas
 =========
 
+
+[![](https://zenodo.org/badge/108553925.svg)](https://zenodo.org/badge/latestdoi/108553925) 
+
+
+
 [![Documentation Status](https://readthedocs.org/projects/rockAtlas/badge/)](http://rockAtlas.readthedocs.io/en/latest/?badge)
 
-[![Coverage Status](https://cdn.jsdelivr.net/gh/thespacedoctor/rockAtlas@master/coverage.svg)](https://cdn.jsdelivr.net/gh/thespacedoctor/rockAtlas@master/htmlcov/index.html)
+[![Coverage Status](https://cdn.rawgit.com/thespacedoctor/rockAtlas/master/coverage.svg)](https://cdn.rawgit.com/thespacedoctor/rockAtlas/master/htmlcov/index.html)
 
-*A python package and command-line tools for A suite of tools to pull
-known solar-system small-body detections out of ATLAS data*.
+*A suite of tools to pull known solar-system small-body detections out of a sky-survey database (e.g. ATLAS) and fit extracted lightcurves to provide absolute magnitudes and phase functions*.
 
 Command-Line Usage
 ==================
@@ -32,13 +36,13 @@ Command-Line Usage
         -f, --full            a full update (not just recently changed exposures and sources)
         -o, --one             only generate positions for a single pyephem snapshot (few 10s of exposures - useful for testing)
 
-Documentation
+<!--- Documentation
 =============
 
 Documentation for rockAtlas is hosted by [Read the
 Docs](http://rockAtlas.readthedocs.org/en/stable/) (last [stable
 version](http://rockAtlas.readthedocs.org/en/stable/) and [latest
-version](http://rockAtlas.readthedocs.org/en/latest/)).
+version](http://rockAtlas.readthedocs.org/en/latest/)). --->
 
 Installation
 ============
@@ -89,7 +93,7 @@ Please report any issues
 License
 =======
 
-Copyright (c) 2018 David Young
+Copyright (c) 2019 David Young
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the
@@ -109,3 +113,19 @@ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
 CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+## How to cite rockAtlas
+
+If you use `rockAtlas` in your work, please cite using the following BibTeX entry: 
+
+```bibtex
+@software{Young_rockAtlas,
+    author = {Young, David R.},
+    doi = {10.5281/zenodo.8037828},
+    license = {GPL-3.0-only},
+    title = {{rockAtlas}},
+    url = {https://github.com/thespacedoctor/rockAtlas}
+}
+```
+ 
