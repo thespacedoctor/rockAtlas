@@ -5,8 +5,7 @@ rockAtlas
 
 [![Coverage Status](https://cdn.rawgit.com/thespacedoctor/rockAtlas/master/coverage.svg)](https://cdn.rawgit.com/thespacedoctor/rockAtlas/master/htmlcov/index.html)
 
-*A python package and command-line tools for A suite of tools to pull
-known solar-system small-body detections out of a sky-survey database (e.g. ATLAS) and fit extracted lightcurves to provide absolute magnitudes and phase functions*.
+*A suite of tools to pull known solar-system small-body detections out of a sky-survey database (e.g. ATLAS) and fit extracted lightcurves to provide absolute magnitudes and phase functions*.
 
 Command-Line Usage
 ==================
