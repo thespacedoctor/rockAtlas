@@ -14,7 +14,7 @@
 		{
 			"color_scheme": "dark",
 			"command": "/Users/Dave/anaconda/envs/rockAtlas/bin/nose2",
-			"working_dir": "/Users/Dave/git_repos/rockAtlas/rockAtlas"
+			"working_dir": "/Users/Dave/git_repos/_packages_/python/rockAtlas"
 		}
 	}
 }

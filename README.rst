@@ -5,8 +5,8 @@ rockAtlas
     :target: http://rockAtlas.readthedocs.io/en/latest/?badge
     :alt: Documentation Status
 
-.. image:: https://cdn.rawgit.com/thespacedoctor/rockAtlas/master/coverage.svg
-    :target: https://cdn.rawgit.com/thespacedoctor/rockAtlas/master/htmlcov/index.html
+.. image:: https://cdn.jsdelivr.net/gh/thespacedoctor/rockAtlas@master/coverage.svg
+    :target: https://cdn.jsdelivr.net/gh/thespacedoctor/rockAtlas@master/htmlcov/index.html
     :alt: Coverage Status
 
 *A python package and command-line tools for A suite of tools to pull known solar-system small-body detections out of ATLAS data*.
@@ -28,11 +28,13 @@ Command-Line Usage
         rockAtlas bookkeeping [-f] [-s <pathToSettingsFile>]
         rockAtlas astorb
         rockAtlas pyephem [-o]
+        rockAtlas orbfit [-o]
     
     Commands:
         bookkeeping           update and clean database tables, perform essential bookkeeping tasks
         astorb                download astorb.dat orbital elements file and update the orbital elements database table
         pyephem               generate the pyephem positions overlapping the ATLAS exposures in the moving objects database
+        orbfit                generate the orbfit positions overlapping the ATLAS exposures in the moving objects database
     
     Options:
         init                  setup the rockAtlas settings file for the first time

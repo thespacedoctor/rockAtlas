@@ -3,7 +3,7 @@ rockAtlas
 
 [![Documentation Status](https://readthedocs.org/projects/rockAtlas/badge/)](http://rockAtlas.readthedocs.io/en/latest/?badge)
 
-[![Coverage Status](https://cdn.rawgit.com/thespacedoctor/rockAtlas/master/coverage.svg)](https://cdn.rawgit.com/thespacedoctor/rockAtlas/master/htmlcov/index.html)
+[![Coverage Status](https://cdn.jsdelivr.net/gh/thespacedoctor/rockAtlas@master/coverage.svg)](https://cdn.jsdelivr.net/gh/thespacedoctor/rockAtlas@master/htmlcov/index.html)
 
 *A python package and command-line tools for A suite of tools to pull
 known solar-system small-body detections out of ATLAS data*.
