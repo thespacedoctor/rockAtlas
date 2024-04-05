@@ -5,8 +5,8 @@ authors:
 - family-names: "Young"
   given-names: "David R."
   orcid: "https://orcid.org/0000-0002-1229-2499"
-doi: 10.5281/zenodo.7970743
-url: "https://github.com/thespacedoctor/rockAtlas"
+doi: 10.5281/zenodo.8037827
+url: "https://zenodo.org/doi/10.5281/zenodo.8037827"
 abstract: A suite of tools to pull known solar-system small-body detections out of a sky-survey database (e.g. ATLAS) and fit extracted lightcurves to provide absolute magnitudes and phase functions.
 keywords: [astronomy]
 license: GPL-3.0-only
