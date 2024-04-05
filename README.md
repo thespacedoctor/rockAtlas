@@ -2,9 +2,7 @@ rockAtlas
 =========
 
 
-[![](https://zenodo.org/badge/108553925.svg)](https://zenodo.org/badge/latestdoi/108553925) 
-
-
+[![](https://zenodo.org/badge/DOI/10.5281/zenodo.8037827.svg)](https://zenodo.org/doi/10.5281/zenodo.8037827) 
 
 [![Documentation Status](https://readthedocs.org/projects/rockAtlas/badge/)](http://rockAtlas.readthedocs.io/en/latest/?badge)
 
@@ -122,10 +120,10 @@ If you use `rockAtlas` in your work, please cite using the following BibTeX entr
 ```bibtex
 @software{Young_rockAtlas,
     author = {Young, David R.},
-    doi = {10.5281/zenodo.8037828},
+    doi = {10.5281/zenodo.8037827},
     license = {GPL-3.0-only},
     title = {{rockAtlas}},
-    url = {https://github.com/thespacedoctor/rockAtlas}
+    url = {https://zenodo.org/doi/10.5281/zenodo.8037827}
 }
 ```
  
